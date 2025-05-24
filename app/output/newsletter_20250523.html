@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StocksBrew Daily Newsletter</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: #1a237e;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .date {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Stock Section */
+        .stock-section {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stock-section:last-child {
+            border-bottom: none;
+        }
+
+        .stock-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stock-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a237e;
+            flex-grow: 1;
+        }
+
+        .sentiment {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sentiment.positive {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .sentiment.negative {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .sentiment.neutral {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        /* Content Sections */
+        .tldr {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a237e;
+            margin: 20px 0 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-left: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        li:before {
+            content: "•";
+            color: #1a237e;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stock-section {
+                padding: 15px;
+            }
+
+            .stock-name {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>StocksBrew Daily Newsletter</h1>
+            <div class="date">May 23, 2025</div>
+        </div>
+
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Indian Stock Market</h2>
+                <span class="sentiment mixed">Mixed</span>
+            </div>
+
+            <div class="tldr">
+                Indian markets broadly declined due to US debt concerns, while select companies showed mixed fortunes, from a major bank's significant loss and downgrades to firms securing low-cost financing and winning large contracts.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>Indian markets (Sensex, Nifty) fell nearly 1% on rising US debt concerns.</li>
+                <li>IndusInd Bank reported a massive ₹2,329 Cr loss in Q4 due to accounting issues, leading to multiple brokerage downgrades.</li>
+                <li>Grasim Industries secured a record low-cost bond deal at 6.56%, reducing borrowing expenses.</li>
+                <li>IndiGo shares soared post-strong Q4 results and an investment grade rating from Moody's.</li>
+                <li>Garden Reach Shipbuilders surged as the lowest bidder for a significant ₹25,000 Cr Navy project.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>Monitor global economic news, especially US debt trends.</li>
+                <li>Exercise caution with banks facing accounting issues or downgrades.</li>
+                <li>Look for companies benefiting from lower interest rates or large contract wins.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Tata Motors</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                Tata Motors is poised to lead India's electric public transport market, a sector projected to offer a substantial $200 billion opportunity by 2030.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>Identified as a top OEM for electric bus adoption.</li>
+                <li>Government mandates for electric buses are expected to significantly boost the company's growth.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>Watch Tata Motors' progress in the electric vehicle segment.</li>
+                <li>Monitor government policies supporting EV adoption in India.</li>
+                <li>Consider long-term investment potential based on this market trend.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Reliance Industries</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                Reliance Industries is set to launch a solar module factory this year, aiming to become the world's second-largest producer outside China, signaling a major strategic push into green energy.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>Solar module factory to commence in 2025, targeting the #2 global producer rank (excluding China).</li>
+                <li>Represents a significant investment and strategic pivot towards renewable energy.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>Track the factory's progress and production capacity.</li>
+                <li>Evaluate the long-term growth potential this move offers Reliance.</li>
+                <li>Research the broader impact on the renewable energy market.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Adani Enterprises</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                Adani Group, including Adani Enterprises, achieved record core earnings (EBITDA) of ₹89,809 crore for FY25, showcasing robust financial health and improved credit ratings.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>Record core earnings highlight strong financial performance and operational strength across the group.</li>
+                <li>Improved credit ratings indicate increased stability and reduced risk.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>Monitor for continued strong financial performance from the Adani Group.</li>
+                <li>Assess how this positive trend could further boost Adani Enterprises' stock.</li>
+                <li>Look for potential future credit rating upgrades for the Group.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Indian Power Sector</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                The Indian Power Sector is experiencing significant growth, with NTPC Green Energy securing a major battery storage project, a projected $200 Billion investment opportunity in industrial solar & battery storage by 2030, and strong profits from key financier PFC.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>NTPC Green Energy secured a significant 80MW/320MWh battery storage project in Kerala.</li>
+                <li>Azalea Capital forecasts a substantial $200 Billion investment opportunity in Indian industrial solar & battery storage by 2030.</li>
+                <li>Power Finance Corp (PFC), a major sector financier, reported strong Q4 profits, signaling a healthy financial outlook.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>Keep an eye on new green energy projects and supportive policies in the sector.</li>
+                <li>Monitor companies involved in solar & battery storage for future growth potential.</li>
+                <li>Watch the financial performance of major power sector lenders like PFC for sector health clues.</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Generated by StocksBrew AI • All information is for reference only</p>
+        </div>
+    </div>
+</body>
+</html> 

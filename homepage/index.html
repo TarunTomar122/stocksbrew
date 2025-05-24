@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StocksBrew - AI-Powered Stock Newsletter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0f172a',
+                        secondary: '#1e293b',
+                        accent: '#06b6d4',
+                        neon: '#00ff88',
+                        purple: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-primary text-white overflow-x-hidden min-h-screen">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-slate-900"></div>
+        <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        <div class="floating-particles"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-50 header-glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-accent to-neon rounded-lg flex items-center justify-center mr-2 sm:mr-3">
+                        <i class="fas fa-chart-line text-black text-sm sm:text-lg"></i>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-accent to-neon bg-clip-text text-transparent">
+                        StocksBrew
+                    </h1>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-300 hover:text-neon transition-colors">Features</a>
+                    <a href="#how-it-works" class="text-gray-300 hover:text-neon transition-colors">How It Works</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section with Subscription -->
+    <section class="relative z-10 min-h-[90vh] flex items-center justify-center px-4 py-12 sm:py-16">
+        <div class="max-w-4xl mx-auto text-center">
+            <!-- Hero Content -->
+            <div class="mb-8 sm:mb-16">
+                <h2 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
+                    <span class="bg-gradient-to-r from-white via-accent to-neon bg-clip-text text-transparent">
+                        AI-Powered
+                    </span>
+                    <br>
+                    <span class="text-white">Stock Intelligence</span>
+                </h2>
+                <p class="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto px-4">
+                    Your personalized portfolio insights delivered straight to your inbox, every day at 6 AM.
+                </p>
+            </div>
+
+            <!-- Subscription Form -->
+            <div class="form-glass rounded-3xl p-6 sm:p-8 shadow-2xl mx-4 sm:mx-auto max-w-xl">
+                <form id="subscriptionForm" class="space-y-4 sm:space-y-6">
+                    <!-- Email Input -->
+                    <div class="relative">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required
+                            class="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-xl sm:rounded-2xl text-white placeholder-gray-400 focus:ring-2 focus:ring-accent focus:border-transparent backdrop-blur-sm text-base sm:text-lg"
+                            placeholder="Enter your email address"
+                        >
+                        <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-accent/20 to-neon/20 opacity-0 transition-opacity duration-300 pointer-events-none" id="emailGlow"></div>
+                    </div>
+                    
+                    <!-- Stock Search and Selection -->
+                    <div class="relative">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="stockSearch" 
+                                placeholder="Search Indian stocks (e.g., TCS, Reliance)"
+                                class="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-xl sm:rounded-2xl text-white placeholder-gray-400 focus:ring-2 focus:ring-accent focus:border-transparent backdrop-blur-sm text-base sm:text-lg"
+                            >
+                            <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Search Results -->
+                        <div id="searchResults" class="absolute top-full left-0 right-0 mt-2 rounded-xl sm:rounded-2xl max-h-48 sm:max-h-60 overflow-y-auto hidden z-50">
+                            <!-- Results will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Stocks Display -->
+                    <div id="selectedStocksContainer" class="hidden">
+                        <div class="text-sm text-gray-400 mb-2 sm:mb-3">Selected Stocks:</div>
+                        <div id="selectedStocksList" class="flex flex-wrap gap-2 mb-3 sm:mb-4">
+                            <!-- Selected stocks will appear here -->
+                        </div>
+                        <div class="text-xs sm:text-sm text-gray-400">
+                            <span id="selectedCount">0</span> stocks selected (minimum 3 required)
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        id="submitBtn"
+                        class="w-full py-3 sm:py-4 bg-gradient-to-r from-accent to-neon text-black font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl hover:shadow-lg hover:shadow-accent/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 btn-particle relative"
+                        disabled
+                    >
+                        <span class="flex items-center justify-center">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Launch My Newsletter
+                        </span>
+                    </button>
+                </form>
+                
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden text-center py-6 sm:py-8">
+                    <div class="glass-card text-neon px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl">
+                        <i class="fas fa-check-circle text-2xl sm:text-3xl mb-2 sm:mb-3"></i>
+                        <h4 class="font-bold text-lg sm:text-xl mb-2">Welcome to the Future!</h4>
+                        <p class="text-gray-300 text-sm sm:text-base">Your AI-powered newsletter is ready. First delivery tomorrow at 6 AM.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="relative z-10 py-16 sm:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 sm:mb-16">
+                <h3 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-accent bg-clip-text text-transparent">
+                    Next-Gen Features
+                </h3>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 sm:gap-8">
+                <div class="text-center p-6 sm:p-8 glass-card rounded-2xl sm:rounded-3xl transition-all duration-300 group feature-float">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-accent to-neon rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-brain text-black text-xl sm:text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">AI Intelligence</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">
+                        Advanced neural networks analyze market patterns in real-time
+                    </p>
+                </div>
+                
+                <div class="text-center p-6 sm:p-8 glass-card rounded-2xl sm:rounded-3xl transition-all duration-300 group feature-float">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple to-accent rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-crosshairs text-white text-xl sm:text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Precision Targeting</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">
+                        Personalized insights for your exact portfolio
+                    </p>
+                </div>
+                
+                <div class="text-center p-6 sm:p-8 glass-card rounded-2xl sm:rounded-3xl transition-all duration-300 group feature-float">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-neon to-purple rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bolt text-black text-xl sm:text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Instant Delivery</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">
+                        Lightning-fast insights before market opens
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="relative z-10 py-16 sm:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 sm:mb-16">
+                <h3 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-neon bg-clip-text text-transparent">
+                    How It Works
+                </h3>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center relative">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-accent to-neon rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-black text-xl sm:text-2xl font-bold relative z-10">
+                        1
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Select Stocks</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">Choose your Indian stocks to track</p>
+                    <div class="absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-accent to-transparent hidden md:block"></div>
+                </div>
+                
+                <div class="text-center relative">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple to-accent rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-white text-xl sm:text-2xl font-bold relative z-10">
+                        2
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">AI Analysis</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">Our AI processes market data</p>
+                    <div class="absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-purple to-transparent hidden md:block"></div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-neon to-purple rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-black text-xl sm:text-2xl font-bold">
+                        3
+                    </div>
+                    <h4 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Receive Insights</h4>
+                    <p class="text-gray-400 text-sm sm:text-base">Get your personalized newsletter</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 glass-card border-t border-white/10 py-8 sm:py-12 mt-16 sm:mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-accent to-neon rounded-lg flex items-center justify-center mr-2 sm:mr-3">
+                        <i class="fas fa-chart-line text-black text-xs sm:text-sm"></i>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-accent to-neon bg-clip-text text-transparent">
+                        StocksBrew
+                    </h1>
+                </div>
+                <p class="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">
+                    The future of stock market intelligence
+                </p>
+                <div class="flex justify-center space-x-4 sm:space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-accent transition-colors">
+                        <i class="fab fa-twitter text-lg sm:text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-accent transition-colors">
+                        <i class="fab fa-linkedin text-lg sm:text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-accent transition-colors">
+                        <i class="fab fa-github text-lg sm:text-xl"></i>
+                    </a>
+                </div>
+                <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/10 text-gray-500 text-xs sm:text-sm">
+                    <p>&copy; 2025 StocksBrew. Powered by AI.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
