@@ -504,7 +504,7 @@ window.StocksBrew = {
             }
 
             // Send welcome email via Flask server
-            const welcomeResponse = await fetch('http://3.86.189.0:5000/subscribe', {
+            const welcomeResponse = await fetch('/api/subscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
