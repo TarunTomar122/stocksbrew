@@ -12,15 +12,17 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 import time
+import gc
 
 
 # Configuration
-NEWS_API_KEY = "ad3828da77694151a23be433536ad81f"  # Your existing API key
+NEWS_API_KEY = "ad3828da77694151a23be433536ad81f"
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'stocks_input.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
 PROCESSED_URLS_FILE = os.path.join(DATA_DIR, 'processed_urls.json')
 URL_CONTENT_FILE = os.path.join(DATA_DIR, 'url_content.json')
+BATCH_SIZE = 50  # Number of URLs to cache before saving
 
 
 # Headers for web scraping
@@ -35,9 +37,6 @@ HEADERS = {
 
 def load_processed_urls():
     """Load the set of already processed URLs and their content"""
-    processed_urls = set()
-    url_content = {}
-    
     try:
         with open(PROCESSED_URLS_FILE, 'r') as f:
             processed_urls = set(json.load(f))
@@ -47,6 +46,9 @@ def load_processed_urls():
     try:
         with open(URL_CONTENT_FILE, 'r') as f:
             url_content = json.load(f)
+            # Limit cached content to most recent 1000 URLs
+            if len(url_content) > 1000:
+                url_content = dict(list(url_content.items())[-1000:])
     except (FileNotFoundError, json.JSONDecodeError):
         url_content = {}
         
@@ -110,8 +112,16 @@ def fetch_full_article_content(url):
                     p.get_text().strip() for p in paragraphs
                 )
         
+        # Clear memory
+        del soup, response
+        gc.collect()
+        
         if not article_content:
             return "Failed to extract article content"
+            
+        # Truncate very long content to save memory
+        if len(article_content) > 20000:
+            article_content = article_content[:20000]
         return article_content
         
     except Exception as e:
@@ -133,19 +143,25 @@ def load_stocks_config():
         sys.exit(1)
 
 
-def fetch_news_for_stock(stock_info, config, newsapi, processed_urls, url_content):
+def fetch_news_for_stock(
+    stock_info, config, newsapi, processed_urls, url_content
+):
     """Fetch news articles for a single stock"""
     print(f"📰 Fetching news for {stock_info['company_name']}...")
     
-    # Calculate date range - start from yesterday at 12:00 AM
+    # Calculate date range
     today = datetime.now()
-    from_date = (today - timedelta(days=config['news_days_back'] + 1)).strftime('%Y-%m-%d')
+    from_date = (
+        today - timedelta(days=config['news_days_back'] + 1)
+    ).strftime('%Y-%m-%d')
     to_date = today.strftime('%Y-%m-%d')
     
     print(f"  📅 Fetching news from {from_date} to {to_date}")
     
     all_articles = []
     new_processed_urls = set()
+    url_updates = {}
+    articles_count = 0  # Keep track of count separately
     
     # Search for each term
     for search_term in stock_info['search_terms']:
@@ -179,22 +195,82 @@ def fetch_news_for_stock(stock_info, config, newsapi, processed_urls, url_conten
                     content = fetch_full_article_content(url)
                     article['full_content'] = content
                     # Only cache and mark as processed if we got valid content
-                    is_valid = (content and
-                              not content.startswith("Error fetching content"))
+                    is_valid = (
+                        content and not content.startswith("Error fetching content")
+                    )
                     if is_valid:
-                        url_content[url] = content
+                        url_updates[url] = content
                         new_processed_urls.add(url)
                 
                 all_articles.append(article)
+                articles_count += 1
+                
+                # Save URL cache in batches to manage memory
+                if len(url_updates) >= BATCH_SIZE:
+                    url_content.update(url_updates)
+                    processed_urls.update(new_processed_urls)
+                    save_processed_urls(processed_urls, url_content)
+                    url_updates.clear()
+                    new_processed_urls.clear()
+                    gc.collect()
             
         except Exception as e:
             print(f"    ❌ Error fetching news for '{search_term}': {str(e)}")
     
     # Update processed URLs with new ones
-    processed_urls.update(new_processed_urls)
+    if url_updates:
+        url_content.update(url_updates)
+        processed_urls.update(new_processed_urls)
+        save_processed_urls(processed_urls, url_content)
     
-    print(f"  ✅ Total articles: {len(all_articles)}")
-    return all_articles
+    # Save articles to file
+    try:
+        # Load existing data
+        try:
+            with open(OUTPUT_FILE, 'r') as f:
+                news_data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            news_data = {
+                'metadata': {
+                    'generated_at': datetime.now().isoformat(),
+                    'total_stocks': 0,
+                    'config': config
+                },
+                'stocks_news': []
+            }
+        
+        # Update or append stock news
+        stock_news = {
+            'stock_info': stock_info,
+            'articles_count': articles_count,
+            'articles': all_articles
+        }
+        
+        for i, existing in enumerate(news_data['stocks_news']):
+            if existing['stock_info']['symbol'] == stock_info['symbol']:
+                news_data['stocks_news'][i] = stock_news
+                break
+        else:
+            news_data['stocks_news'].append(stock_news)
+        
+        # Update metadata
+        news_data['metadata']['total_stocks'] = len(news_data['stocks_news'])
+        
+        # Save updated data
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(news_data, f, indent=2)
+            
+    except Exception as e:
+        print(f"❌ Error saving news content: {e}")
+    
+    # Store count before cleanup
+    final_count = articles_count
+    
+    # Clear memory
+    del all_articles, url_updates, new_processed_urls
+    gc.collect()
+    
+    print(f"  ✅ Total articles: {final_count}")
 
 
 def main():
@@ -215,49 +291,14 @@ def main():
         print(f"❌ Failed to initialize NewsAPI client: {e}")
         sys.exit(1)
     
-    # Fetch news for all stocks
-    news_data = {
-        'metadata': {
-            'generated_at': datetime.now().isoformat(),
-            'total_stocks': len(stocks),
-            'config': config
-        },
-        'stocks_news': []
-    }
-    
+    # Process each stock
     for stock in stocks:
-        articles = fetch_news_for_stock(
+        fetch_news_for_stock(
             stock, config, newsapi, processed_urls, url_content
         )
-        
-        stock_news = {
-            'stock_info': stock,
-            'articles_count': len(articles),
-            'articles': articles
-        }
-        
-        news_data['stocks_news'].append(stock_news)
+        gc.collect()  # Force garbage collection between stocks
     
-    # Save processed URLs and content for future runs
-    save_processed_urls(processed_urls, url_content)
-    print(f"📋 Saved {len(processed_urls)} processed URLs for future runs")
-    
-    # Save to output file
-    try:
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            json.dump(news_data, f, indent=2, ensure_ascii=False)
-        
-        print(f"✅ News content saved to: {OUTPUT_FILE}")
-        print("Summary:")
-        for stock_news in news_data['stocks_news']:
-            stock_name = stock_news['stock_info']['company_name']
-            article_count = stock_news['articles_count']
-            print(f"  - {stock_name}: {article_count} articles")
-    
-    except Exception as e:
-        print(f"❌ Failed to save news content: {e}")
-        sys.exit(1)
+    print("✨ News fetching completed successfully!")
 
 
 if __name__ == "__main__":

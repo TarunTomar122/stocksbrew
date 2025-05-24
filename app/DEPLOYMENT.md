@@ -7,10 +7,10 @@
 
 ## Deployment Steps
 
-1. First, SSH into your EC2 instance (replace YOUR_EC2_IP with your instance's public IP):
+1. First, SSH into your EC2 instance (replace 3.86.189.0 with your instance's public IP):
 ```bash
 chmod 400 stockbrew.pem
-ssh -i stockbrew.pem ubuntu@YOUR_EC2_IP
+ssh -i stockbrew.pem ubuntu@3.86.189.0
 ```
 
 2. Install system dependencies:
@@ -29,7 +29,7 @@ cd /var/www/stocksbrew
 4. Copy the application files to EC2 (run this from your local machine):
 ```bash
 cd /path/to/your/app
-scp -i stockbrew.pem -r * ubuntu@YOUR_EC2_IP:/var/www/stocksbrew/
+scp -i stockbrew.pem -r * ubuntu@3.86.189.0:/var/www/stocksbrew/
 ```
 
 5. Set up Python virtual environment and install dependencies:
@@ -71,7 +71,7 @@ Add the following content:
 ```nginx
 server {
     listen 80;
-    server_name YOUR_EC2_IP;
+    server_name 3.86.189.0;
 
     location / {
         proxy_pass http://localhost:5000;
@@ -124,7 +124,7 @@ sudo tail -f /var/log/nginx/error.log
    - Make sure the service has access to it
 
 3. The application will be accessible at:
-   http://YOUR_EC2_IP/
+   http://3.86.189.0/
 
 4. For production, it's recommended to:
    - Set up SSL/HTTPS

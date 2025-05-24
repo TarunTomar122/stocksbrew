@@ -6,35 +6,27 @@
   },
   "stocks": [
     {
-      "symbol": "Cadila Healthcare",
-      "company_name": "Cadila Healthcare",
-      "search_terms": [
-        "cadila healthcare stock",
-        "cadila healthcare company news"
-      ]
-    },
-    {
-      "symbol": "Adani Power",
-      "company_name": "Adani Power",
-      "search_terms": [
-        "adani power stock",
-        "adani power company news"
-      ]
-    },
-    {
-      "symbol": "Brigade Enterprises",
-      "company_name": "Brigade Enterprises",
-      "search_terms": [
-        "brigade enterprises stock",
-        "brigade enterprises company news"
-      ]
-    },
-    {
       "symbol": "TATA POWER",
       "company_name": "TATA POWER",
       "search_terms": [
         "tata power stock",
         "tata power company news"
+      ]
+    },
+    {
+      "symbol": "Tata Power",
+      "company_name": "Tata Power",
+      "search_terms": [
+        "tata power stock",
+        "tata power company news"
+      ]
+    },
+    {
+      "symbol": "Tata Motors",
+      "company_name": "Tata Motors",
+      "search_terms": [
+        "tata motors stock",
+        "tata motors company news"
       ]
     },
     {

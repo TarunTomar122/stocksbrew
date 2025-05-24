@@ -9,6 +9,8 @@ import json
 import os
 import sys
 import google.generativeai as genai
+from typing import Dict, Any
+import gc
 
 # Configuration
 GEMINI_API_KEY = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"  
@@ -16,10 +18,7 @@ GEMINI_API_KEY = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'summaries.json')
-
-# Load news content
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
-INPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
+BATCH_SIZE = 3  # Process stocks in batches to manage memory
 
 
 def load_news_content():
@@ -46,10 +45,13 @@ def prepare_content_for_analysis(stock_news):
     content = f"Stock: {stock_info['company_name']} ({stock_info['symbol']})\n"
     content += "Recent News Articles:\n\n"
     
-    for i, article in enumerate(articles, 1):  # Limit to top 10 articles
+    for i, article in enumerate(articles[:5], 1):  # Limit to top 5 articles
         content += f"{i}. Title: {article['title']}\n"
         if article.get('full_content'):
-            full_content = article['full_content']
+            # Truncate content to manage memory
+            full_content = (
+                article['full_content'][:20000] if article['full_content'] else ""
+            )
             content += f"   Content: {full_content}...\n"
         content += f"   URL: {article['url']}\n"
         content += f"   Published: {article['publishedAt']}\n\n"
@@ -115,11 +117,60 @@ def generate_summary(content, gemini_model):
     
     try:
         response = gemini_model.generate_content(prompt)
-        return response.text
+        summary = response.text
+        
+        # Clear memory
+        del response, prompt
+        gc.collect()
+        
+        return summary
     
     except Exception as e:
         print(f"❌ Error generating summary: {e}")
         return None
+
+
+def process_stock_batch(batch, gemini_model):
+    """Process a batch of stocks and save their summaries"""
+    summaries = {}
+    
+    for stock_news in batch:
+        stock_name = stock_news['stock_info']['company_name']
+        print(f"Processing {stock_name}...")
+        
+        content = prepare_content_for_analysis(stock_news)
+        if content:
+            summary = generate_summary(content, gemini_model)
+            if summary:
+                # parse the summary into a json object
+                # strip off the ```json and ```
+                summary = summary.strip('```json').strip('```')
+                summary_json = json.loads(summary)
+                summaries[stock_name] = summary_json
+                print(f"summarized {stock_name}")
+        
+        # Clear memory
+        del content, stock_news
+        gc.collect()
+    
+    # Save batch of summaries
+    try:
+        # Load existing summaries
+        try:
+            with open(OUTPUT_FILE, 'r') as f:
+                existing_summaries = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            existing_summaries = {}
+        
+        # Update with new summaries
+        existing_summaries.update(summaries)
+        
+        # Save updated summaries
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(existing_summaries, f)
+            
+    except Exception as e:
+        print(f"❌ Error saving summaries: {e}")
 
 
 def main():
@@ -131,26 +182,19 @@ def main():
     genai.configure(api_key=GEMINI_API_KEY)
     gemini_model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
     
-    summaries = {}
-
-    # Process each stock's news content
+    # Process stocks in batches
+    current_batch = []
     for stock_news in news_content['stocks_news']:
-        stock_name = stock_news['stock_info']['company_name']
-        print(f"Processing {stock_name}...")
-        content = prepare_content_for_analysis(stock_news)
-        if content:
-            summary = generate_summary(content, gemini_model)
-            
-            # parse the summary into a json object
-            # strip off the ```json and ```
-            summary = summary.strip('```json').strip('```')
-            summary_json = json.loads(summary)
-            summaries[stock_name] = summary_json
-            print(f"summarized {stock_name}")
-
-    # save the summaries to a json file
-    with open(OUTPUT_FILE, 'w') as f:
-        json.dump(summaries, f)
+        current_batch.append(stock_news)
+        
+        if len(current_batch) >= BATCH_SIZE:
+            process_stock_batch(current_batch, gemini_model)
+            current_batch = []
+            gc.collect()  # Force garbage collection between batches
+    
+    # Process remaining stocks
+    if current_batch:
+        process_stock_batch(current_batch, gemini_model)
 
 
 if __name__ == "__main__":
