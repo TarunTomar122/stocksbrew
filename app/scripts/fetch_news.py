@@ -6,14 +6,15 @@ Reads stocks from input JSON, fetches news articles, and saves to news_content.j
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from newsapi import NewsApiClient
 import sys
 import requests
 from bs4 import BeautifulSoup
 import time
 import gc
-
+from urllib.parse import quote
+from email.utils import parsedate_to_datetime
 
 # Configuration
 NEWS_API_KEY = "ad3828da77694151a23be433536ad81f"
@@ -34,6 +35,67 @@ HEADERS = {
     )
 }
 
+def custom_fetch_latest_headlines(search_text, num_headlines):
+    # Fetch headlines from Google News RSS feed
+    print("Fetching headlines from Google News RSS feed...")
+    
+    # URL encode the search text to handle spaces and special characters
+    encoded_search = quote(search_text)
+    base_url = "https://news.google.com/news/rss/search/section/q"
+    url = f"{base_url}/{encoded_search}/?hl=en-IN&gl=IN&ned=in"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        # Use basic HTML parser instead of XML parser
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Get all items which contain both title and pubDate
+        items = soup.find_all('item')
+        
+        # Get current time in UTC
+        current_time = datetime.now(timezone.utc)
+        
+        # Calculate start of yesterday in UTC
+        today = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_yesterday = today - timedelta(days=2)
+        
+        print(f"Fetching articles from {start_of_yesterday} to {current_time}")
+        
+        filtered_headlines = []
+        for item in items:
+            title_tag = item.find('title')
+            link_tag = item.find('link')
+            pubdate_tag = item.find('pubdate')
+            
+            if title_tag and link_tag and pubdate_tag:
+                # Get the URL which is the text content after the link tag
+                url = link_tag.next_sibling.strip()
+                # Parse the publication date (already timezone-aware)
+                pub_date = parsedate_to_datetime(pubdate_tag.text.strip())
+                
+                # Include articles from start of yesterday until now
+                if (title_tag.text.strip() and url and 
+                    pub_date >= start_of_yesterday and 
+                    pub_date <= current_time):
+                    filtered_headlines.append({
+                        'title': title_tag.text.strip(),
+                        'url': url,
+                        'published_at': pub_date.isoformat(),
+                        'fetched_at': current_time.isoformat(),
+                        'search_term': search_text
+                    })
+        
+        # Sort headlines by published date, newest first
+        filtered_headlines.sort(key=lambda x: x['published_at'], reverse=True)
+        
+        print("Found", len(filtered_headlines), "custom headlines")
+        return filtered_headlines[:num_headlines]
+        
+    except Exception as e:
+        print(f"    ❌ Error fetching news for '{search_text}': {str(e)}")
+        return []
 
 def load_processed_urls():
     """Load the set of already processed URLs and their content"""
@@ -180,8 +242,14 @@ def fetch_news_for_stock(
             )
             
             articles = response.get('articles', [])
+
             print(f"    Found {len(articles)} articles")
-            
+
+            headlines = custom_fetch_latest_headlines(search_term, 5)
+            articles.extend(headlines)
+
+            print("Found", len(articles), "articles")
+
             # Add metadata and fetch full content for each article
             for article in articles:
                 url = article['url']

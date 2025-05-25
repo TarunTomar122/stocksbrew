@@ -43,9 +43,11 @@ def main():
                 selected_stocks = stocks.split(', ')
                 summaries = load_summaries(selected_stocks)
                 refined_summaries = refine_summaries(summaries)
-                newsletter_html = generate_newsletter(refined_summaries)
-                save_newsletter(newsletter_html, email)
-                send_newsletter_email(newsletter_html, email)
+
+                if refined_summaries:
+                    newsletter_html = generate_newsletter(refined_summaries)
+                    save_newsletter(newsletter_html, email)
+                    send_newsletter_email(newsletter_html, email)
         
         print('✅ Newsletter pipeline completed!')
         return True

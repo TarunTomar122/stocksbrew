@@ -95,7 +95,7 @@ def prepare_stocks_input(stocks):
     """Prepare the stocks input JSON for the news fetching script"""
     stocks_data = {
         "config": {
-            "news_days_back": 1,
+            "news_days_back": 2,
             "language": "en",
             "max_articles_per_stock": 1
         },
@@ -104,7 +104,7 @@ def prepare_stocks_input(stocks):
                 "symbol": stock,
                 "company_name": stock,  # We can enhance this with company names
                 "search_terms": [
-                    f"{stock.lower()} company news stock"
+                    f"{stock.lower()} company stocks news"
                 ]
             }
             for stock in stocks

@@ -56,7 +56,6 @@ def prepare_content_for_analysis(stock_news):
             )
             content += f"   Content: {full_content}...\n"
         content += f"   URL: {article['url']}\n"
-        content += f"   Published: {article['publishedAt']}\n\n"
     
     return content
 
