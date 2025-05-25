@@ -504,24 +504,24 @@ window.StocksBrew = {
             }
 
             // Send welcome email via Flask server
-            const welcomeResponse = await fetch('/api/subscribe', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    email: data.email
-                })
-            });
+            // const welcomeResponse = await fetch('/api/subscribe', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Accept': 'application/json'
+            //     },
+            //     body: JSON.stringify({
+            //         email: data.email
+            //     })
+            // });
 
-            if (!welcomeResponse.ok) {
-                const errorData = await welcomeResponse.json();
-                console.warn('Welcome email failed:', errorData.message);
-                // Don't throw error for welcome email failure, just log it
-            } else {
-                console.log('Welcome email sent successfully');
-            }
+            // if (!welcomeResponse.ok) {
+            //     const errorData = await welcomeResponse.json();
+            //     console.warn('Welcome email failed:', errorData.message);
+            //     // Don't throw error for welcome email failure, just log it
+            // } else {
+            //     console.log('Welcome email sent successfully');
+            // }
 
             console.log('Subscription saved to Airtable:', data);
             return true;

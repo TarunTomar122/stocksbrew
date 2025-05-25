@@ -1,0 +1,37 @@
+{
+  "config": {
+    "news_days_back": 1,
+    "language": "en",
+    "max_articles_per_stock": 1
+  },
+  "stocks": [
+    {
+      "symbol": "Tata Power",
+      "company_name": "Tata Power",
+      "search_terms": [
+        "tata power company news stock"
+      ]
+    },
+    {
+      "symbol": "Tata Motors",
+      "company_name": "Tata Motors",
+      "search_terms": [
+        "tata motors company news stock"
+      ]
+    },
+    {
+      "symbol": "Adani Ports and Special Economic Zone",
+      "company_name": "Adani Ports and Special Economic Zone",
+      "search_terms": [
+        "adani ports and special economic zone company news stock"
+      ]
+    },
+    {
+      "symbol": "TATA POWER",
+      "company_name": "TATA POWER",
+      "search_terms": [
+        "tata power company news stock"
+      ]
+    }
+  ]
+}
