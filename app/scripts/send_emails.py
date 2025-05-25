@@ -56,7 +56,7 @@ def send_newsletter_email(html_content, email):
         
         # Create email object with HTML content - using the HTML as-is
         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
-            to=email,
+            to=[{"email": email}],
             sender=EMAIL_FROM,
             subject=subject,
             html_content=html_content,
@@ -81,6 +81,7 @@ def send_newsletter_email(html_content, email):
         print(f"Error type: {type(e).__name__}")
         print(f"Error details: {str(e)}")
         return False
+
 
 
 def main():

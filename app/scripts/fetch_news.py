@@ -66,6 +66,7 @@ def save_processed_urls(urls, url_content):
         json.dump(url_content, f)
 
 
+ 
 def fetch_full_article_content(url):
     """Fetch and extract the full content of an article from its URL"""
     try:
@@ -130,6 +131,7 @@ def fetch_full_article_content(url):
         return f"Error fetching content: {str(e)}"
 
 
+ 
 def load_stocks_config():
     """Load stocks configuration from input JSON"""
     try:
@@ -143,6 +145,7 @@ def load_stocks_config():
         sys.exit(1)
 
 
+ 
 def fetch_news_for_stock(
     stock_info, config, newsapi, processed_urls, url_content
 ):
@@ -273,6 +276,7 @@ def fetch_news_for_stock(
     print(f"  ✅ Total articles: {final_count}")
 
 
+ 
 def main():
     """Main function to fetch news for all stocks"""
     print("🚀 Starting news fetching process...")

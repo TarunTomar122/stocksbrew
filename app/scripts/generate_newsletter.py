@@ -11,6 +11,7 @@ import sys
 from datetime import datetime
 import google.generativeai as genai
 from jinja2 import Environment, FileSystemLoader
+from .send_emails import send_newsletter_email
 
 # Configuration
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
@@ -29,6 +30,7 @@ GEMINI_API_KEY = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
+ 
 def load_summaries(selected_stocks):
     """Load stock summaries from JSON file"""
     try:
@@ -49,6 +51,7 @@ def load_summaries(selected_stocks):
         sys.exit(1)
 
 
+ 
 def refine_summaries(summaries):
     """Process summaries through Gemini to refine and remove repetition"""
     prompt = """
@@ -89,6 +92,7 @@ def refine_summaries(summaries):
         return summaries
 
 
+ 
 def generate_newsletter(summaries):
     """Generate the complete newsletter HTML"""
     # Set up Jinja2 environment
@@ -126,6 +130,7 @@ def generate_newsletter(summaries):
     return newsletter_html
 
 
+ 
 def save_newsletter(html, email):
     """Save the newsletter HTML to a file"""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -143,6 +148,33 @@ def save_newsletter(html, email):
         sys.exit(1)
 
 
+ 
+def send_newsletter_email_to_subscriber(email, stocks):
+    """Send the newsletter to a subscriber"""
+    try:
+        print(f"\n📧 Generating newsletter for {email}")
+        selected_stocks = stocks.split(', ')
+
+        # Load and refine summaries
+        print("📚 Loading summaries and refining...")
+        refined_summaries = refine_summaries(load_summaries(selected_stocks))
+
+        # Generate newsletter
+        print("📝 Generating newsletter...")
+        newsletter_html = generate_newsletter(refined_summaries)
+        
+        # Send newsletter
+        print("📧 Sending newsletter...")
+        send_newsletter_email(newsletter_html, email)
+        
+        print("✨ Newsletter generation complete!")
+
+    except Exception as e:
+        print(f"❌ Error sending newsletter: {e}")
+        sys.exit(1)
+
+
+ 
 def main():
     """Main function to generate the newsletter"""
     print("🚀 Starting newsletter generation...")

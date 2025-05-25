@@ -21,6 +21,7 @@ OUTPUT_FILE = os.path.join(DATA_DIR, 'summaries.json')
 BATCH_SIZE = 3  # Process stocks in batches to manage memory
 
 
+ 
 def load_news_content():
     """Load news content from JSON file"""
     try:
@@ -34,6 +35,7 @@ def load_news_content():
         sys.exit(1)
 
 
+ 
 def prepare_content_for_analysis(stock_news):
     """Prepare news content for AI analysis"""
     stock_info = stock_news['stock_info']
@@ -59,6 +61,7 @@ def prepare_content_for_analysis(stock_news):
     return content
 
 
+ 
 def generate_summary(content, gemini_model):
     """Generate AI summary for stock news content using Gemini"""
     
@@ -130,6 +133,7 @@ def generate_summary(content, gemini_model):
         return None
 
 
+ 
 def process_stock_batch(batch, gemini_model):
     """Process a batch of stocks and save their summaries"""
     summaries = {}
@@ -173,6 +177,7 @@ def process_stock_batch(batch, gemini_model):
         print(f"❌ Error saving summaries: {e}")
 
 
+ 
 def main():
     """Main function to execute the script"""
     # Load news content

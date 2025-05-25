@@ -104,8 +104,7 @@ def prepare_stocks_input(stocks):
                 "symbol": stock,
                 "company_name": stock,  # We can enhance this with company names
                 "search_terms": [
-                    f"{stock.lower()} stock",
-                    f"{stock.lower()} company news"
+                    f"{stock.lower()} company news stock"
                 ]
             }
             for stock in stocks
