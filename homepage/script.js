@@ -4526,7 +4526,7 @@ const INDIAN_STOCKS = [
     "name": "Mangalore Chemicals & Fertilizers Limited"
   },
   {
-    "symbol": "MANGLMCEM",
+    "symbol": "MANGMLCEM",
     "name": "Mangalam Cement Limited"
   },
   {
@@ -8434,7 +8434,7 @@ window.StocksBrew = {
         // If max stocks reached, show message instead of results
         if (this.selectedStocks.size >= this.MAX_STOCKS) {
             searchResults.innerHTML = `
-                <div class="p-4 text-center text-red-400">
+                <div class="p-4 text-center text-red-600">
                     Maximum limit of ${this.MAX_STOCKS} stocks reached. Remove some stocks to add more.
                 </div>
             `;
@@ -8477,10 +8477,10 @@ window.StocksBrew = {
     
         if (filteredStocks.length > 0) {
             searchResults.innerHTML = filteredStocks.map(stock => `
-                <div class="p-3 hover:bg-white/10 cursor-pointer transition-colors border-b border-white/10 last:border-b-0" 
+                <div class="p-3 hover:bg-accent/10 cursor-pointer transition-colors border-b border-gray-200 last:border-b-0" 
                      onclick="StocksBrew.selectStock('${stock.symbol}', '${stock.name}')">
-                    <div class="font-semibold text-white">${stock.symbol}</div>
-                    <div class="text-sm text-gray-400">${stock.name}</div>
+                    <div class="font-semibold text-dark">${stock.symbol}</div>
+                    <div class="text-sm text-gray-600">${stock.name}</div>
                 </div>
             `).join('');
             searchResults.classList.remove('hidden');
@@ -8490,7 +8490,7 @@ window.StocksBrew = {
                 : `No stocks found matching "${query}"`;
             
             searchResults.innerHTML = `
-                <div class="p-4 text-center text-gray-400">
+                <div class="p-4 text-center text-gray-600">
                     ${message}
                 </div>
             `;
@@ -8510,8 +8510,8 @@ window.StocksBrew = {
             const stock = INDIAN_STOCKS.find(s => s.symbol === symbol);
             return `
                 <div class="bg-gradient-to-r from-accent/20 to-neon/20 border border-accent/30 rounded-xl px-3 py-2 flex items-center gap-2">
-                    <span class="text-white font-semibold text-sm">${symbol}</span>
-                    <button onclick="StocksBrew.removeStock('${symbol}')" class="text-gray-400 hover:text-white transition-colors">
+                    <span class="text-dark font-semibold text-sm">${symbol}</span>
+                    <button onclick="StocksBrew.removeStock('${symbol}')" class="text-gray-600 hover:text-dark transition-colors">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                 </div>
@@ -8806,9 +8806,233 @@ window.StocksBrew = {
         }, 5000);
     },
 
+    setupImageUpload: function() {
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadArea = document.getElementById('imageUploadArea');
+        
+        // Handle file selection
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.processImage(file);
+            }
+        });
+        
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-accent/50');
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-accent/50');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-accent/50');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                this.processImage(files[0]);
+            }
+        });
+    },
+
+    async processImage(file) {
+        // Show progress
+        this.showUploadProgress();
+        
+        try {
+            // Convert image to base64
+            const base64Image = await this.fileToBase64(file);
+            
+            // Update progress
+            this.updateProgress(30);
+            
+            // Extract text using OCR
+            const extractedText = await this.extractTextFromImage(base64Image);
+            
+            console.log("Extracted Text: ",extractedText);
+
+            // Update progress
+            this.updateProgress(70);
+            
+            // Find stock symbols in the extracted text
+            const foundStocks = this.findStockSymbols(extractedText);
+            
+            // Update progress
+            this.updateProgress(90);
+            
+            // Add found stocks to selection (limit to first 10)
+            const stocksToAdd = foundStocks.slice(0, 10);
+            let addedCount = 0;
+            
+            stocksToAdd.forEach(symbol => {
+                if (this.selectedStocks.size < this.MAX_STOCKS && !this.selectedStocks.has(symbol)) {
+                    this.selectedStocks.add(symbol);
+                    addedCount++;
+                }
+            });
+            
+            // Update progress to 100%
+            this.updateProgress(100);
+            
+            // Show success
+            setTimeout(() => {
+                this.showUploadSuccess(addedCount, foundStocks.length);
+                this.updateSelectedStocksDisplay();
+                this.updateSubmitButton();
+                
+                if (addedCount > 0) {
+                    document.getElementById('selectedStocksContainer').classList.remove('hidden');
+                }
+            }, 500);
+            
+        } catch (error) {
+            console.error('Error processing image:', error);
+            this.showUploadError('Failed to process image. Please try again.');
+        }
+    },
+
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    },
+
+    async extractTextFromImage(base64Image) {
+        // Using Tesseract.js for client-side OCR
+        // First, we need to load Tesseract.js
+        if (!window.Tesseract) {
+            await this.loadTesseract();
+        }
+        
+        const { data: { text } } = await Tesseract.recognize(base64Image, 'eng', {
+            logger: m => {
+                if (m.status === 'recognizing text') {
+                    const progress = Math.round(30 + (m.progress * 40)); // 30-70% range
+                    this.updateProgress(progress);
+                }
+            }
+        });
+        
+        return text;
+    },
+
+    loadTesseract() {
+        return new Promise((resolve, reject) => {
+            if (window.Tesseract) {
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/tesseract.js@4/dist/tesseract.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    },
+
+    findStockSymbols(text) {
+        const foundSymbols = new Set();
+        const textUpper = text.toUpperCase();
+        
+        // Create a map for faster lookup
+        const stockMap = new Map();
+        INDIAN_STOCKS.forEach(stock => {
+            stockMap.set(stock.symbol, stock);
+        });
+        
+        // Look for exact symbol matches
+        INDIAN_STOCKS.forEach(stock => {
+            const symbol = stock.symbol;
+            
+            // Check for exact symbol match with word boundaries
+            const symbolRegex = new RegExp(`\\b${symbol}\\b`, 'gi');
+            if (symbolRegex.test(textUpper)) {
+                foundSymbols.add(symbol);
+            }
+            
+            // Also check for symbol in common patterns like "SYMBOL: 100" or "SYMBOL 100.50"
+            const patternRegex = new RegExp(`\\b${symbol}\\s*[:.]?\\s*\\d`, 'gi');
+            if (patternRegex.test(textUpper)) {
+                foundSymbols.add(symbol);
+            }
+        });
+        
+        // Also look for common stock name patterns
+        INDIAN_STOCKS.forEach(stock => {
+            const name = stock.name.toUpperCase();
+            const nameWords = name.split(' ').filter(word => word.length > 3);
+            
+            // Check if multiple words from the stock name appear in the text
+            const foundWords = nameWords.filter(word => textUpper.includes(word));
+            if (foundWords.length >= 2 || (nameWords.length === 1 && foundWords.length === 1)) {
+                foundSymbols.add(stock.symbol);
+            }
+        });
+        
+        return Array.from(foundSymbols);
+    },
+
+    showUploadProgress() {
+        document.getElementById('uploadPrompt').classList.add('hidden');
+        document.getElementById('uploadSuccess').classList.add('hidden');
+        document.getElementById('uploadProgress').classList.remove('hidden');
+        this.updateProgress(10);
+    },
+
+    updateProgress(percentage) {
+        const progressBar = document.getElementById('progressBar');
+        progressBar.style.width = `${percentage}%`;
+    },
+
+    showUploadSuccess(addedCount, totalFound) {
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('uploadSuccess').classList.remove('hidden');
+        
+        const countElement = document.getElementById('extractedCount');
+        if (addedCount === 0) {
+            countElement.textContent = totalFound > 0 
+                ? `Found ${totalFound} stocks but they were already selected or limit reached`
+                : 'No valid stock symbols found in the image';
+        } else {
+            countElement.textContent = `Added ${addedCount} stocks to your selection`;
+            if (totalFound > addedCount) {
+                countElement.textContent += ` (${totalFound - addedCount} were duplicates or limit reached)`;
+            }
+        }
+        
+        // Reset upload area after 3 seconds
+        setTimeout(() => {
+            this.resetUploadArea();
+        }, 3000);
+    },
+
+    showUploadError(message) {
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('uploadPrompt').classList.remove('hidden');
+        this.showNotification(message, 'error');
+    },
+
+    resetUploadArea() {
+        document.getElementById('uploadSuccess').classList.add('hidden');
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('uploadPrompt').classList.remove('hidden');
+        document.getElementById('imageUpload').value = '';
+        this.updateProgress(0);
+    },
+
     init: function() {
         this.setupEventListeners();
         this.setupSearchFunctionality();
+        this.setupImageUpload();
     }
 };
 
