@@ -2,7 +2,7 @@ name: Daily Newsletter Generation
 
 on:
   schedule:
-    - cron: '55 4 * * *'  # Runs at 10:25 AM IST daily (04:55 UTC)
+    - cron: '30 23 * * *'  # Runs at 5:00 AM IST daily (23:30 UTC previous day)
   workflow_dispatch:  # Allows manual triggering
 
 jobs:

@@ -31,10 +31,8 @@ def get_hot_stocks():
 def main():
     try:
         print('🔍 Getting stocks from Airtable...')
-        # stocks = get_unique_stocks_from_airtable()
-        # prepare_stocks_input(stocks)
-
-        return
+        stocks = get_unique_stocks_from_airtable()
+        prepare_stocks_input(stocks)
         
         print('📰 Fetching news...')
         fetch_news(api_key="ffa35669f5154e2cb785128081374d52")
