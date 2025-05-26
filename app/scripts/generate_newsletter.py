@@ -31,6 +31,20 @@ genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
  
+def load_hot_stocks_summaries():
+    """Load stock summaries from JSON file"""
+    INPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_summaries.json')
+    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
+        summaries = json.load(f)
+    return summaries
+
+def load_hot_stocks_refined_summaries():
+    """Load refined stock summaries from JSON file"""
+    INPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_refined_summaries.json')
+    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
+        summaries = json.load(f)
+    return summaries
+
 def load_summaries(selected_stocks):
     """Load stock summaries from JSON file"""
     try:
@@ -50,9 +64,8 @@ def load_summaries(selected_stocks):
         print(f"❌ Invalid JSON in input file: {e}")
         sys.exit(1)
 
-
  
-def refine_summaries(summaries):
+def refine_summaries(summaries, file_name=None):
     """Process summaries through Gemini to refine and remove repetition"""
     prompt = """
     You are a financial newsletter editor. I will provide you with summaries of
@@ -71,6 +84,9 @@ def refine_summaries(summaries):
     Please provide the refined summaries in the exact same JSON format.
     """
     
+    if len(summaries) == 0:
+        return {}
+
     response = model.generate_content(
         prompt.format(summaries=json.dumps(summaries, indent=2))
     )
@@ -83,7 +99,12 @@ def refine_summaries(summaries):
             refined_text = refined_text.split('```json')[1].split('```')[0]
         elif '```' in refined_text:
             refined_text = refined_text.split('```')[1].split('```')[0]
-            
+        
+        if file_name:
+            # save the refined text to a file
+            with open(os.path.join(DATA_DIR, f'{file_name}_refined_summaries.json'), 'w', encoding='utf-8') as f:
+                json.dump(json.loads(refined_text), f, indent=2)
+
         return json.loads(refined_text)
     except Exception as e:
         print(
@@ -93,7 +114,7 @@ def refine_summaries(summaries):
 
 
  
-def generate_newsletter(summaries):
+def generate_newsletter(summaries, hot_stocks=[]):
     """Generate the complete newsletter HTML"""
     # Set up Jinja2 environment
     env = Environment(
@@ -104,9 +125,12 @@ def generate_newsletter(summaries):
     
     # Load templates
     template = env.get_template('newsletter_template.html')
-    
-    # Prepare stock sections data
-    stocks_data = []
+
+    if len(summaries) == 0 and len(hot_stocks) == 0:
+        return ""
+
+    # Prepare user stocks data
+    user_stocks_data = []
     for company_name, data in summaries.items():
         if data.get('tldr'):  # Only include stocks with content
             stock_data = {
@@ -119,12 +143,38 @@ def generate_newsletter(summaries):
                 'has_key_points': bool(data.get('key_points')),
                 'has_action_items': bool(data.get('action_items'))
             }
-            stocks_data.append(stock_data)
-    
-    # Generate HTML
+            user_stocks_data.append(stock_data)
+
+    # Prepare hot stocks data
+    hot_stocks_data = []
+    for stock in hot_stocks:
+        try:
+            # Parse the JSON string if it's a string
+            if isinstance(stock, str):
+                stock_data = json.loads(stock)
+            else:
+                stock_data = stock
+
+            formatted_stock = {
+                'company_name': stock_data.get('stock_name', 'Hot Stock'),
+                'sentiment': stock_data['sentiment'].capitalize(),
+                'sentiment_class': stock_data['sentiment'].lower(),
+                'tldr': stock_data['tldr'],
+                'key_points': stock_data['key_points'],
+                'action_items': stock_data['action_items'],
+                'has_key_points': bool(stock_data['key_points']),
+                'has_action_items': bool(stock_data['action_items'])
+            }
+            hot_stocks_data.append(formatted_stock)
+        except (json.JSONDecodeError, KeyError, AttributeError) as e:
+            print(f"Error processing hot stock: {e}")
+            continue
+
+    # Generate HTML with separate sections
     newsletter_html = template.render(
         date=datetime.now().strftime('%B %d, %Y'),
-        stocks=stocks_data
+        user_stocks=user_stocks_data,
+        hot_stocks=hot_stocks_data
     )
     
     return newsletter_html

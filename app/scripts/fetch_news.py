@@ -16,8 +16,6 @@ import gc
 from urllib.parse import quote
 from email.utils import parsedate_to_datetime
 
-# Configuration
-NEWS_API_KEY = "ffa35669f5154e2cb785128081374d52"
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'stocks_input.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
@@ -345,20 +343,40 @@ def fetch_news_for_stock(
 
 
  
-def main():
+def main(api_key, hot_stocks=False):
     """Main function to fetch news for all stocks"""
     print("🚀 Starting news fetching process...")
+    global OUTPUT_FILE
+    if hot_stocks:
+        print("🔥 Fetching news for hot stocks...")
+        stocks = [
+            {
+                "symbol": "HOT STOCK",
+                "company_name": "HOT STOCK",
+                "search_terms": [
+                    "breakout stock today India",
+                    "best stock today India"
+                ]
+            },
+        ]
+        config = {
+            "news_days_back": 2,
+            "language": "en",
+            "max_articles_per_stock": 2
+        }
+        OUTPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_news_content.json')
+    else:
+        # Load configuration and processed URLs
+        data = load_stocks_config()
+        stocks = data['stocks']
+        config = data['config']
     
-    # Load configuration and processed URLs
-    data = load_stocks_config()
-    stocks = data['stocks']
-    config = data['config']
     processed_urls, url_content = load_processed_urls()
     print(f"📋 Found {len(processed_urls)} previously processed URLs")
     
     # Initialize NewsAPI client
     try:
-        newsapi = NewsApiClient(api_key=NEWS_API_KEY)
+        newsapi = NewsApiClient(api_key=api_key)
     except Exception as e:
         print(f"❌ Failed to initialize NewsAPI client: {e}")
         sys.exit(1)
@@ -374,4 +392,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main(api_key="ad3828da77694151a23be433536ad81f") 

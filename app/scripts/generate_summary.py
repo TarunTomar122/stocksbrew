@@ -11,14 +11,13 @@ import sys
 import google.generativeai as genai
 from typing import Dict, Any
 import gc
-
+import time
 # Configuration
-GEMINI_API_KEY = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"  
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'summaries.json')
-BATCH_SIZE = 3  # Process stocks in batches to manage memory
+BATCH_SIZE = 5  # Process stocks in batches to manage memory
 
 
  
@@ -60,7 +59,61 @@ def prepare_content_for_analysis(stock_news):
     return content
 
 
- 
+def generate_summary_for_hot_stocks(content, gemini_model):
+    prompt = f"""
+        Analyze the provided news content and extract information about hot stocks 
+        and trading opportunities. Return the analysis in JSON format.
+
+        For each stock mentioned with clear trading setup, provide:
+        - A brief TLDR (max 2 sentences)
+        - Overall sentiment (positive/negative/neutral)
+        - 3-5 key technical or fundamental points with emojis
+        - 2-3 specific action items with price levels
+
+        Format each point as a clear, actionable statement with an emoji.
+        Include exact price targets and stop losses if available.
+
+        ### Content to analyze:
+        {content}
+
+        ### Response format:
+        Return ONLY a JSON array of stock summaries. Each summary should have this structure:
+        {{  
+            "stock_name": "Stock name",
+            "tldr": "Brief description of the opportunity",
+            "sentiment": "positive/negative/neutral",
+            "key_points": [
+                "📈 Point 1 with specific numbers",
+                "🎯 Point 2 with specific levels",
+                "⚠️ Risk point if any"
+            ],
+            "action_items": [
+                "👉 Specific action with price level",
+                "🛑 Stop loss level"
+            ]
+        }}
+    """
+    try:
+        response = gemini_model.generate_content(prompt)
+        summary = response.text.strip()
+        
+        # If response is wrapped in code blocks, remove them
+        if summary.startswith('```') and summary.endswith('```'):
+            summary = summary.strip('`')
+            if summary.startswith('json\n'):
+                summary = summary[5:]
+        
+        # Clear memory
+        del response, prompt
+        gc.collect()
+        
+        return summary
+    
+    except Exception as e:
+        print(f"❌ Error generating summary: {e}")
+        return None
+
+
 def generate_summary(content, gemini_model):
     """Generate AI summary for stock news content using Gemini"""
     
@@ -177,15 +230,41 @@ def process_stock_batch(batch, gemini_model):
 
 
  
-def main():
+def main(api_key, hot_stocks=False):
     """Main function to execute the script"""
+    global INPUT_FILE, OUTPUT_FILE
+    if hot_stocks:
+        INPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_news_content.json')
+        OUTPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_summaries.json')
+
     # Load news content
     news_content = load_news_content()
     
     # Initialize Gemini model
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=api_key)
     gemini_model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
     
+    if hot_stocks:
+        summaries = {}
+        for stock_news in news_content['stocks_news']:
+            content = prepare_content_for_analysis(stock_news)
+            if content:
+                summary = generate_summary_for_hot_stocks(content, gemini_model)
+                if summary:
+                    try:
+                        # Parse the summary as JSON
+                        summary_json = json.loads(summary)
+                        summaries[stock_news['stock_info']['company_name']] = summary_json
+                        print(f"Summarized {stock_news['stock_info']['company_name']}")
+                    except json.JSONDecodeError as e:
+                        print(f"Error parsing summary: {e}")
+                        continue
+        
+        # Save the summaries
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(summaries, f, indent=2)
+        return summaries
+
     # Process stocks in batches
     current_batch = []
     for stock_news in news_content['stocks_news']:
@@ -195,6 +274,8 @@ def main():
             process_stock_batch(current_batch, gemini_model)
             current_batch = []
             gc.collect()  # Force garbage collection between batches
+            time.sleep(30)
+        
     
     # Process remaining stocks
     if current_batch:
@@ -202,5 +283,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(api_key="AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo")
 

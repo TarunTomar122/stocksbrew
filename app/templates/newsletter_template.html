@@ -4,206 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StocksBrew Daily ☕</title>
-    <style>
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
-
-        /* Container */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        /* Header */
-        .header {
-            background-color: #1a237e;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header .date {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        /* Stock Section */
-        .stock-section {
-            padding: 25px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .stock-section:last-child {
-            border-bottom: none;
-        }
-
-        .stock-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            justify-content: space-between;
-        }
-
-        .stock-name {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a237e;
-            flex-grow: 1;
-        }
-
-        .sentiment {
-            padding: 10px 10px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 500;
-            margin-left: 16px;
-        }
-
-        .sentiment.positive {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .sentiment.negative {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-
-        .sentiment.neutral {
-            background-color: #f5f5f5;
-            color: #616161;
-        }
-
-        /* Content Sections */
-        .tldr {
-            background-color: #f3f4f6;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a237e;
-            margin: 20px 0 10px;
-        }
-
-        ul {
-            list-style-type: none;
-            margin-left: 0;
-        }
-
-        li {
-            margin-bottom: 10px;
-            position: relative;
-            padding-left: 20px;
-            font-size: 16px;
-        }
-
-        li:before {
-            content: "•";
-            color: #1a237e;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        /* Footer */
-        .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #666;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-
-            .header {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .stock-section {
-                padding: 15px;
-            }
-
-            .stock-name {
-                font-size: 20px;
-            }
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>StocksBrew Daily ☕</h1>
-            <div class="date">{{ date }}</div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #2d3748; background-color: #f7fafc;">
+    <div style="max-width: 680px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center;">
+            <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.5px;">StocksBrew Daily ☕</h1>
+            <div style="font-size: 16px; opacity: 0.9; font-weight: 400; margin: 0;">{{ date }}</div>
         </div>
+        
+        {% if user_stocks %}
+        <!-- Your Watchlist Section -->
+        <div style="background-color: #f8fafc; border-left: 4px solid #667eea; margin: 0;">
+            <h2 style="font-size: 20px; font-weight: 600; padding: 20px 30px; margin: 0; color: #2d3748;">📊 Your Watchlist</h2>
+        </div>
+        {% for stock in user_stocks %}
+        <div style="padding: 30px; border-bottom: 1px solid #e2e8f0;">
+            <!-- Stock Header using Table -->
+            <table style="width: 100%; margin-bottom: 20px;" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="vertical-align: top; width: 70%;">
+                        <h2 style="font-size: 24px; font-weight: 700; color: #1a202c; margin: 0; line-height: 1.2;">{{ stock.company_name }}</h2>
+                    </td>
+                    <td style="vertical-align: top; width: 30%; text-align: right;">
+                        {% if stock.sentiment_class == 'positive' %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% elif stock.sentiment_class == 'negative' %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #fed7d7; color: #742a2a; border: 1px solid #fc8181; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% else %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e0; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
 
-        {% for stock in stocks %}
-        <div class="stock-section">
-            <div class="stock-header">
-                <h2 class="stock-name">{{ stock.company_name }}</h2>
-                <span class="sentiment {{ stock.sentiment_class }}">{{ stock.sentiment }}</span>
-            </div>
-
-            <div class="tldr">
+            <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
+                <div style="position: absolute; top: -8px; left: 15px; background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; max-width: 36px; text-align: center; margin-bottom: 10px;">TL;DR</div>
                 {{ stock.tldr }}
             </div>
 
             {% if stock.has_key_points %}
-            <h3 class="section-title">Key Points</h3>
-            <ul>
+            <h3 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; position: relative;">
+                <span style="position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: #667eea; content: '';"></span>
+                Key Points
+            </h3>
+            <ul style="list-style-type: none; margin: 0 0 20px 0; padding: 0;">
                 {% for point in stock.key_points %}
-                <li>{{ point }}</li>
+                <li style="margin-bottom: 12px; position: relative; font-size: 15px; line-height: 1.6; color: #4a5568;">
+                    <span style="color: #667eea; font-weight: bold; position: absolute; left: 0; top: 0;">→</span>
+                    {{ point }}
+                </li>
                 {% endfor %}
             </ul>
             {% endif %}
 
             {% if stock.has_action_items %}
-            <h3 class="section-title">Action Items</h3>
-            <ul>
+            <h3 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; position: relative;">
+                <span style="position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: #667eea; content: '';"></span>
+                Action Items
+            </h3>
+            <ul style="list-style-type: none; margin: 0 0 20px 0; padding: 0;">
                 {% for item in stock.action_items %}
-                <li>{{ item }}</li>
+                <li style="margin-bottom: 12px; position: relative; font-size: 15px; line-height: 1.6; color: #4a5568;">
+                    <span style="color: #667eea; font-weight: bold; position: absolute; left: 0; top: 0;">→</span>
+                    {{ item }}
+                </li>
                 {% endfor %}
             </ul>
             {% endif %}
         </div>
         {% endfor %}
+        {% endif %}
 
-        <div class="footer">
-            <p>Generated by StocksBrew AI • All information is for reference only</p>
+        {% if hot_stocks %}
+        <!-- Hot Stocks Section -->
+        <div style="background-color: #f8fafc; border-left: 4px solid #667eea; margin: 0;">
+            <h2 style="font-size: 20px; font-weight: 600; padding: 20px 30px; margin: 0; color: #2d3748;">🔥 Hot Stocks Today</h2>
+        </div>
+        {% for stock in hot_stocks %}
+        <div style="padding: 30px; border-bottom: 1px solid #e2e8f0;">
+            <!-- Stock Header using Table -->
+            <table style="width: 100%; margin-bottom: 20px;" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="vertical-align: top; width: 70%;">
+                        <h2 style="font-size: 24px; font-weight: 700; color: #1a202c; margin: 0; line-height: 1.2;">{{ stock.company_name }}</h2>
+                    </td>
+                    <td style="vertical-align: top; width: 30%; text-align: right;">
+                        {% if stock.sentiment_class == 'positive' %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% elif stock.sentiment_class == 'negative' %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #fed7d7; color: #742a2a; border: 1px solid #fc8181; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% else %}
+                        <span style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e0; display: inline-block;">{{ stock.sentiment }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
+                <div style="position: absolute; top: -8px; left: 15px; background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; max-width: 36px; text-align: center; margin-bottom: 10px;">TL;DR</div>
+                {{ stock.tldr }}
+            </div>
+
+            {% if stock.has_key_points %}
+            <h3 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; position: relative;">
+                <span style="position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: #667eea; content: '';"></span>
+                Key Points
+            </h3>
+            <ul style="list-style-type: none; margin: 0 0 20px 0; padding: 0;">
+                {% for point in stock.key_points %}
+                <li style="margin-bottom: 12px; position: relative; font-size: 15px; line-height: 1.6; color: #4a5568;">
+                    <span style="color: #667eea; font-weight: bold; position: absolute; left: 0; top: 0;">→</span>
+                    {{ point }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if stock.has_action_items %}
+            <h3 style="font-size: 18px; font-weight: 600; color: #2d3748; margin: 25px 0 15px 0; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; position: relative;">
+                <span style="position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: #667eea; content: '';"></span>
+                Action Items
+            </h3>
+            <ul style="list-style-type: none; margin: 0 0 20px 0; padding: 0;">
+                {% for item in stock.action_items %}
+                <li style="margin-bottom: 12px; position: relative; font-size: 15px; line-height: 1.6; color: #4a5568;">
+                    <span style="color: #667eea; font-weight: bold; position: absolute; left: 0; top: 0;">→</span>
+                    {{ item }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Footer -->
+        <div style="background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); padding: 30px; text-align: center; color: #e2e8f0;">
+            <p style="font-size: 14px; margin: 0 0 10px 0;">Generated by StocksBrew AI</p>
+            <p style="font-size: 14px; margin: 0 0 15px 0;">All information is for reference only • Not financial advice</p>
+            <div style="margin-top: 15px;">
+                <a href="#" style="color: #90cdf4; text-decoration: none; margin: 0 10px; font-size: 13px;">Unsubscribe</a>
+                <a href="#" style="color: #90cdf4; text-decoration: none; margin: 0 10px; font-size: 13px;">View Online</a>
+                <a href="#" style="color: #90cdf4; text-decoration: none; margin: 0 10px; font-size: 13px;">Forward to Friend</a>
+            </div>
         </div>
     </div>
 </body>
