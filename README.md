@@ -6,6 +6,7 @@ AI powered newsletter for Indian stocks.
 
 - [ ] add tips on what to monitor about that particular stock
 - [ ] add specific parameters to check on the basis of the key points
+- [ ] use different newsapi keys for dev and prod
 
 Feedback from Yash Shenai:
 
