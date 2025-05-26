@@ -17,7 +17,7 @@ from urllib.parse import quote
 from email.utils import parsedate_to_datetime
 
 # Configuration
-NEWS_API_KEY = "ad3828da77694151a23be433536ad81f"
+NEWS_API_KEY = "ffa35669f5154e2cb785128081374d52"
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'stocks_input.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')

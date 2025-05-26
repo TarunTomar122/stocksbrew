@@ -4,7 +4,6 @@ AI powered newsletter for Indian stocks.
 
 ## TODOS
 
-- [ ] support more stocks
 - [ ] add tips on what to monitor about that particular stock
 - [ ] add specific parameters to check on the basis of the key points
 
