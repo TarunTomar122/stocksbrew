@@ -15,7 +15,7 @@
         
         {% if user_stocks %}
         <!-- Your Watchlist Section -->
-        <div style="background-color: #f8fafc; border-left: 4px solid #667eea; margin: 0;">
+        <div style="background-color: #f8fafc;">
             <h2 style="font-size: 20px; font-weight: 600; padding: 20px 30px; margin: 0; color: #2d3748;">📊 Your Watchlist</h2>
         </div>
         {% for stock in user_stocks %}
@@ -38,7 +38,7 @@
                 </tr>
             </table>
 
-            <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
+            <div style="background: #edf2f7; padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
                 <div style="position: absolute; top: -8px; left: 15px; background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; max-width: 36px; text-align: center; margin-bottom: 10px;">TL;DR</div>
                 {{ stock.tldr }}
             </div>
@@ -101,7 +101,7 @@
                 </tr>
             </table>
 
-            <div style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
+            <div style="background: #edf2f7; padding: 20px; border-radius: 12px; margin-bottom: 25px; font-size: 16px; line-height: 1.7; border-left: 4px solid #667eea; position: relative;">
                 <div style="position: absolute; top: -8px; left: 15px; background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; max-width: 36px; text-align: center; margin-bottom: 10px;">TL;DR</div>
                 {{ stock.tldr }}
             </div>
