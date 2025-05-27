@@ -8395,7 +8395,7 @@ const INDIAN_STOCKS = [
 window.StocksBrew = {
     selectedStocks: new Set(),
     searchTimeout: null,
-    MAX_STOCKS: 10,
+    MAX_STOCKS: 20,
 
     selectStock: function(symbol, name) {
         if (this.selectedStocks.size >= this.MAX_STOCKS) {
