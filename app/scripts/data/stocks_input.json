@@ -1,0 +1,373 @@
+{
+  "config": {
+    "news_days_back": 2,
+    "language": "en",
+    "max_articles_per_stock": 1
+  },
+  "stocks": [
+    {
+      "symbol": "ICICI Bank Ltd.",
+      "company_name": "ICICI Bank Ltd.",
+      "search_terms": [
+        "icici bank ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "HDFC Bank Ltd.",
+      "company_name": "HDFC Bank Ltd.",
+      "search_terms": [
+        "hdfc bank ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Indian Energy Exchange Limited",
+      "company_name": "Indian Energy Exchange Limited",
+      "search_terms": [
+        "indian energy exchange limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "ITC Limited",
+      "company_name": "ITC Limited",
+      "search_terms": [
+        "itc limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Mankind Pharma Limited",
+      "company_name": "Mankind Pharma Limited",
+      "search_terms": [
+        "mankind pharma limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Kaveri Seed Company Limited",
+      "company_name": "Kaveri Seed Company Limited",
+      "search_terms": [
+        "kaveri seed company limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Power Grid Corporation of India Limited",
+      "company_name": "Power Grid Corporation of India Limited",
+      "search_terms": [
+        "power grid corporation of india limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "IDFC First Bank Limited",
+      "company_name": "IDFC First Bank Limited",
+      "search_terms": [
+        "idfc first bank limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Reliance Industries Ltd.",
+      "company_name": "Reliance Industries Ltd.",
+      "search_terms": [
+        "reliance industries ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Jio Financial Services Ltd.",
+      "company_name": "Jio Financial Services Ltd.",
+      "search_terms": [
+        "jio financial services ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Jio Financial Services Limited",
+      "company_name": "Jio Financial Services Limited",
+      "search_terms": [
+        "jio financial services limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Sun Pharmaceutical Industries Ltd.",
+      "company_name": "Sun Pharmaceutical Industries Ltd.",
+      "search_terms": [
+        "sun pharmaceutical industries ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Hero MotoCorp Limited",
+      "company_name": "Hero MotoCorp Limited",
+      "search_terms": [
+        "hero motocorp limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Indigo Paints Limited",
+      "company_name": "Indigo Paints Limited",
+      "search_terms": [
+        "indigo paints limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "ADF Foods Ltd",
+      "company_name": "ADF Foods Ltd",
+      "search_terms": [
+        "adf foods ltd company stocks news"
+      ]
+    },
+    {
+      "symbol": "BOROSIL RENEWABLES LIMITED",
+      "company_name": "BOROSIL RENEWABLES LIMITED",
+      "search_terms": [
+        "borosil renewables limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Swiggy Limited",
+      "company_name": "Swiggy Limited",
+      "search_terms": [
+        "swiggy limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Vedanta Limited",
+      "company_name": "Vedanta Limited",
+      "search_terms": [
+        "vedanta limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Reliance Industries Limited",
+      "company_name": "Reliance Industries Limited",
+      "search_terms": [
+        "reliance industries limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "NTPC Limited",
+      "company_name": "NTPC Limited",
+      "search_terms": [
+        "ntpc limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "L&T Finance Limited",
+      "company_name": "L&T Finance Limited",
+      "search_terms": [
+        "l&t finance limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Bharat Petroleum Corporation Limited",
+      "company_name": "Bharat Petroleum Corporation Limited",
+      "search_terms": [
+        "bharat petroleum corporation limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "ICICI Bank Limited",
+      "company_name": "ICICI Bank Limited",
+      "search_terms": [
+        "icici bank limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Asian Paints Limited",
+      "company_name": "Asian Paints Limited",
+      "search_terms": [
+        "asian paints limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Hindustan Unilever Limited",
+      "company_name": "Hindustan Unilever Limited",
+      "search_terms": [
+        "hindustan unilever limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Sun Pharmaceutical Industries Limited",
+      "company_name": "Sun Pharmaceutical Industries Limited",
+      "search_terms": [
+        "sun pharmaceutical industries limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Zen Technologies Limited",
+      "company_name": "Zen Technologies Limited",
+      "search_terms": [
+        "zen technologies limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Wockhardt Limited",
+      "company_name": "Wockhardt Limited",
+      "search_terms": [
+        "wockhardt limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Indian Railway Finance Corporation Limited",
+      "company_name": "Indian Railway Finance Corporation Limited",
+      "search_terms": [
+        "indian railway finance corporation limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Tata Consultancy Services Ltd.",
+      "company_name": "Tata Consultancy Services Ltd.",
+      "search_terms": [
+        "tata consultancy services ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Bharat Electronics Limited",
+      "company_name": "Bharat Electronics Limited",
+      "search_terms": [
+        "bharat electronics limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Tata Communications Ltd.",
+      "company_name": "Tata Communications Ltd.",
+      "search_terms": [
+        "tata communications ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Hindustan Unilever Ltd.",
+      "company_name": "Hindustan Unilever Ltd.",
+      "search_terms": [
+        "hindustan unilever ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Dr. Reddy's Laboratories Limited",
+      "company_name": "Dr. Reddy's Laboratories Limited",
+      "search_terms": [
+        "dr. reddy's laboratories limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "RattanIndia Power Limited",
+      "company_name": "RattanIndia Power Limited",
+      "search_terms": [
+        "rattanindia power limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Wipro Limited",
+      "company_name": "Wipro Limited",
+      "search_terms": [
+        "wipro limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Mahindra & Mahindra Limited",
+      "company_name": "Mahindra & Mahindra Limited",
+      "search_terms": [
+        "mahindra & mahindra limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Tata Power Company Limited",
+      "company_name": "Tata Power Company Limited",
+      "search_terms": [
+        "tata power company limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "HDFC Bank Limited",
+      "company_name": "HDFC Bank Limited",
+      "search_terms": [
+        "hdfc bank limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Tata Steel Limited",
+      "company_name": "Tata Steel Limited",
+      "search_terms": [
+        "tata steel limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Bajaj Auto Limited",
+      "company_name": "Bajaj Auto Limited",
+      "search_terms": [
+        "bajaj auto limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Astral Limited",
+      "company_name": "Astral Limited",
+      "search_terms": [
+        "astral limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Amara Raja Energy & Mobility Ltd.",
+      "company_name": "Amara Raja Energy & Mobility Ltd.",
+      "search_terms": [
+        "amara raja energy & mobility ltd. company stocks news"
+      ]
+    },
+    {
+      "symbol": "Oil & Natural Gas Corporation Limited",
+      "company_name": "Oil & Natural Gas Corporation Limited",
+      "search_terms": [
+        "oil & natural gas corporation limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Hindustan Aeronautics Limited",
+      "company_name": "Hindustan Aeronautics Limited",
+      "search_terms": [
+        "hindustan aeronautics limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Tata Motors Limited",
+      "company_name": "Tata Motors Limited",
+      "search_terms": [
+        "tata motors limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "InterGlobe Aviation Limited",
+      "company_name": "InterGlobe Aviation Limited",
+      "search_terms": [
+        "interglobe aviation limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Indian Renewable Energy Development Agency Limited",
+      "company_name": "Indian Renewable Energy Development Agency Limited",
+      "search_terms": [
+        "indian renewable energy development agency limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Motilal Oswal Financial Services Limited",
+      "company_name": "Motilal Oswal Financial Services Limited",
+      "search_terms": [
+        "motilal oswal financial services limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "JSW Energy Limited",
+      "company_name": "JSW Energy Limited",
+      "search_terms": [
+        "jsw energy limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "ETERNAL LIMITED",
+      "company_name": "ETERNAL LIMITED",
+      "search_terms": [
+        "eternal limited company stocks news"
+      ]
+    },
+    {
+      "symbol": "Narayana Hrudayalaya Ltd.",
+      "company_name": "Narayana Hrudayalaya Ltd.",
+      "search_terms": [
+        "narayana hrudayalaya ltd. company stocks news"
+      ]
+    }
+  ]
+}

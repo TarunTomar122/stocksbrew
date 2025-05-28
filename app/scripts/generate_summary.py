@@ -12,6 +12,9 @@ import google.generativeai as genai
 from typing import Dict, Any
 import gc
 import time
+from datetime import datetime
+from scripts.db import client
+
 # Configuration
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
@@ -20,21 +23,22 @@ OUTPUT_FILE = os.path.join(DATA_DIR, 'summaries.json')
 BATCH_SIZE = 5  # Process stocks in batches to manage memory
 
 
- 
-def load_news_content():
-    """Load news content from JSON file"""
-    try:
-        with open(INPUT_FILE, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"❌ Input file not found: {INPUT_FILE}")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON in input file: {e}")
-        sys.exit(1)
+def load_news_content(hot_stocks=False):
+    """Load news content from database"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    if hot_stocks:
+        doc = client.stockbrew_stuff.hot_stocks_news.find_one({"date": today})
+    else:
+        doc = client.stockbrew_stuff.regular_stocks_news.find_one({"date": today})
+    
+    if doc:
+        return doc.get("news_data", {})
+    else:
+        print(f"❌ No news data found for {today}")
+        return {"stocks_news": []}
 
 
- 
 def prepare_content_for_analysis(stock_news):
     """Prepare news content for AI analysis"""
     stock_info = stock_news['stock_info']
@@ -185,9 +189,8 @@ def generate_summary(content, gemini_model):
         return None
 
 
- 
 def process_stock_batch(batch, gemini_model):
-    """Process a batch of stocks and save their summaries"""
+    """Process a batch of stocks and return their summaries"""
     summaries = {}
     
     for stock_news in batch:
@@ -209,7 +212,7 @@ def process_stock_batch(batch, gemini_model):
         del content, stock_news
         gc.collect()
     
-    # Save batch of summaries
+    # Save batch of summaries to file (for backward compatibility)
     try:
         # Load existing summaries
         try:
@@ -227,9 +230,10 @@ def process_stock_batch(batch, gemini_model):
             
     except Exception as e:
         print(f"❌ Error saving summaries: {e}")
+    
+    return summaries
 
 
- 
 def main(api_key, hot_stocks=False):
     """Main function to execute the script"""
     global INPUT_FILE, OUTPUT_FILE
@@ -238,7 +242,7 @@ def main(api_key, hot_stocks=False):
         OUTPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_summaries.json')
 
     # Load news content
-    news_content = load_news_content()
+    news_content = load_news_content(hot_stocks)
     
     # Initialize Gemini model
     genai.configure(api_key=api_key)
@@ -260,18 +264,27 @@ def main(api_key, hot_stocks=False):
                         print(f"Error parsing summary: {e}")
                         continue
         
+        # save the summaries in the database
+        client.stockbrew_stuff.hot_stocks_summaries.update_one(
+            {"date": datetime.now().strftime("%Y-%m-%d")},
+            {"$set": {"summaries": summaries}},
+            upsert=True
+        )
+
         # Save the summaries
         with open(OUTPUT_FILE, 'w') as f:
             json.dump(summaries, f, indent=2)
         return summaries
 
     # Process stocks in batches
+    summaries = {}
     current_batch = []
     for stock_news in news_content['stocks_news']:
         current_batch.append(stock_news)
         
         if len(current_batch) >= BATCH_SIZE:
-            process_stock_batch(current_batch, gemini_model)
+            batch_summaries = process_stock_batch(current_batch, gemini_model)
+            summaries.update(batch_summaries)
             current_batch = []
             gc.collect()  # Force garbage collection between batches
             time.sleep(30)
@@ -279,7 +292,17 @@ def main(api_key, hot_stocks=False):
     
     # Process remaining stocks
     if current_batch:
-        process_stock_batch(current_batch, gemini_model)
+        batch_summaries = process_stock_batch(current_batch, gemini_model)
+        summaries.update(batch_summaries)
+    
+    # Save regular stocks summaries to database
+    client.stockbrew_stuff.regular_stocks_summaries.update_one(
+        {"date": datetime.now().strftime("%Y-%m-%d")},
+        {"$set": {"summaries": summaries}},
+        upsert=True
+    )
+    
+    return summaries
 
 
 if __name__ == "__main__":
