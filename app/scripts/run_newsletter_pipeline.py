@@ -45,7 +45,7 @@ def main():
         print('🔥 Getting hot stocks...')
         hot_stocks = get_hot_stocks()
         # get 3 random stocks from the refined summaries
-        random_hot_stocks = random.sample(hot_stocks, 3)
+        random_hot_stocks = random.sample(hot_stocks, min(len(hot_stocks), 3))
 
         print('📧 Generating and sending newsletters...')
         entries = get_all_entries_from_airtable()
