@@ -78,7 +78,8 @@ def manage_regular_stocks():
 
     # Get unique stocks from Airtable
     print("🔍 Getting stocks from Airtable...")
-    stocks = get_unique_stocks_from_airtable()
+    # stocks = get_unique_stocks_from_airtable()
+    stocks = ["HDFC Bank", "Tata motors", "Reliance Industries"]
 
     if not stocks:
         print("❌ No stocks found in Airtable")

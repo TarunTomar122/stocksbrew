@@ -155,6 +155,15 @@ def generate_summary(content, gemini_model):
     - Make it **concise**, **easy to scan**, and **actionable**
     - Use **emojis**, **numbers**, and **bold keywords** to improve readability
     - Avoid technical jargon
+    - Use and summarize **news-based developments** (e.g., earnings, lawsuits, mergers, government actions)
+
+    ### What to avoid:
+    - NEVER suggest **buying**, **selling**, or **trading** a stock.  
+    - DO NOT include:  
+        - Buy/sell/accumulate/hold/exit  
+        - Target prices (e.g., “Target ₹400”)  
+        - Stop losses (e.g., “SL at ₹360”)  
+        - Technical trading setups (e.g., breakout, support, RSI)
 
     ---
 
