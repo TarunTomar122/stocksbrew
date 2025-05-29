@@ -15,6 +15,8 @@ import time
 import gc
 from urllib.parse import quote
 from email.utils import parsedate_to_datetime
+from scripts.db import client
+from scripts.custom_fetch import search_and_get_link
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'stocks_input.json')
@@ -207,7 +209,7 @@ def load_stocks_config():
 
  
 def fetch_news_for_stock(
-    stock_info, config, newsapi, processed_urls, url_content
+    stock_info, config, newsapi, processed_urls, url_content, hot_stocks=False
 ):
     """Fetch news articles for a single stock"""
     print(f"📰 Fetching news for {stock_info['company_name']}...")
@@ -243,7 +245,10 @@ def fetch_news_for_stock(
 
             print(f"    Found {len(articles)} articles")
 
-            headlines = custom_fetch_latest_headlines(search_term, 5)
+            headlines = custom_fetch_latest_headlines(search_term, 3)
+            for headline in headlines:
+                link = search_and_get_link(headline.get("title"))
+                headline['url'] = link
             articles.extend(headlines)
 
             print("Found", len(articles), "articles")
@@ -325,6 +330,21 @@ def fetch_news_for_stock(
         # Update metadata
         news_data['metadata']['total_stocks'] = len(news_data['stocks_news'])
         
+        if hot_stocks:
+            # save updated data in the database
+            client.stockbrew_stuff.hot_stocks_news.update_one(
+                {"date": datetime.now().strftime("%Y-%m-%d")},
+                {"$set": {"news_data": news_data}},
+                upsert=True
+            )
+        else:
+            # save updated data in the database for regular stocks
+            client.stockbrew_stuff.regular_stocks_news.update_one(
+                {"date": datetime.now().strftime("%Y-%m-%d")},
+                {"$set": {"news_data": news_data}},
+                upsert=True
+            )
+
         # Save updated data
         with open(OUTPUT_FILE, 'w') as f:
             json.dump(news_data, f, indent=2)
@@ -355,12 +375,12 @@ def main(api_key, hot_stocks=False):
                 "company_name": "HOT STOCK",
                 "search_terms": [
                     "breakout stock today India",
-                    "best stock today India"
+                    "indian stocks today"
                 ]
             },
         ]
         config = {
-            "news_days_back": 2,
+            "news_days_back": 1,
             "language": "en",
             "max_articles_per_stock": 2
         }
@@ -384,7 +404,7 @@ def main(api_key, hot_stocks=False):
     # Process each stock
     for stock in stocks:
         fetch_news_for_stock(
-            stock, config, newsapi, processed_urls, url_content
+            stock, config, newsapi, processed_urls, url_content, hot_stocks
         )
         gc.collect()  # Force garbage collection between stocks
     

@@ -12,6 +12,7 @@ from datetime import datetime
 import google.generativeai as genai
 from jinja2 import Environment, FileSystemLoader
 from .send_emails import send_newsletter_email
+from scripts.db import client
 
 # Configuration
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
@@ -30,41 +31,38 @@ GEMINI_API_KEY = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
- 
+
 def load_hot_stocks_summaries():
-    """Load stock summaries from JSON file"""
-    INPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_summaries.json')
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-        summaries = json.load(f)
-    return summaries
+    """Load hot stock summaries from database"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    doc = client.stockbrew_stuff.hot_stocks_summaries.find_one({"date": today})
+    if doc:
+        return doc.get("summaries", {})
+    return {}
 
 def load_hot_stocks_refined_summaries():
-    """Load refined stock summaries from JSON file"""
-    INPUT_FILE = os.path.join(DATA_DIR, 'hot_stocks_refined_summaries.json')
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-        summaries = json.load(f)
-    return summaries
+    """Load refined hot stock summaries from database"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    doc = client.stockbrew_stuff.hot_stocks_refined_summaries.find_one({"date": today})
+    if doc:
+        return doc.get("refined_summaries", {})
+    return {}
 
 def load_summaries(selected_stocks):
-    """Load stock summaries from JSON file"""
-    try:
-        with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-            summaries = json.load(f)
+    """Load stock summaries from database"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": today})
+    if doc:
+        all_summaries = doc.get("summaries", {})
+        # filter summaries to only include selected stocks
+        selected_summaries = {}
+        for stock in selected_stocks:
+            if stock in all_summaries:
+                selected_summaries[stock] = all_summaries[stock]
+        return selected_summaries
+    return {}
 
-            # filter summaries to only include selected stocks
-            selected_summaries = {}
-            for stock in selected_stocks:
-                if stock in summaries:
-                    selected_summaries[stock] = summaries[stock]
-            return selected_summaries
-    except FileNotFoundError:
-        print(f"❌ Input file not found: {INPUT_FILE}")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON in input file: {e}")
-        sys.exit(1)
 
- 
 def refine_summaries(summaries, file_name=None):
     """Process summaries through Gemini to refine and remove repetition"""
     prompt = """
@@ -77,7 +75,8 @@ def refine_summaries(summaries, file_name=None):
     5. Keep the language professional but engaging
     6. Remove the stocks that have no news affecting stock price
     7. Reduce the overall length of the summaries
-    8. Remove any markdown formatting like ** for bold or * for italic from the summaries
+    8. Remove any buy/sell/trade/accumulate/hold/exit or target price recommendations
+    9. Remove any markdown formatting like ** for bold or * for italic from the summaries
     
     Here are the summaries:
     {summaries}
@@ -114,7 +113,6 @@ def refine_summaries(summaries, file_name=None):
         return summaries
 
 
- 
 def generate_newsletter(summaries, hot_stocks=[]):
     """Generate the complete newsletter HTML"""
     # Set up Jinja2 environment
@@ -181,7 +179,6 @@ def generate_newsletter(summaries, hot_stocks=[]):
     return newsletter_html
 
 
- 
 def save_newsletter(html, email):
     """Save the newsletter HTML to a file"""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -199,7 +196,6 @@ def save_newsletter(html, email):
         sys.exit(1)
 
 
- 
 def send_newsletter_email_to_subscriber(email, stocks):
     """Send the newsletter to a subscriber"""
     try:
@@ -225,7 +221,6 @@ def send_newsletter_email_to_subscriber(email, stocks):
         sys.exit(1)
 
 
- 
 def main():
     """Main function to generate the newsletter"""
     print("🚀 Starting newsletter generation...")
