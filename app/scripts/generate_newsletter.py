@@ -76,7 +76,8 @@ def refine_summaries(summaries, file_name=None):
     6. Remove the stocks that have no news affecting stock price
     7. Reduce the overall length of the summaries
     8. Remove any buy/sell/trade/accumulate/hold/exit or target price recommendations
-
+    9. Remove any markdown formatting like ** for bold or * for italic from the summaries
+    
     Here are the summaries:
     {summaries}
 
