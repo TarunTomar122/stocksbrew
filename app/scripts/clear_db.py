@@ -1,4 +1,9 @@
-from db import client
+import sys
+from pathlib import Path
+
+# Add app directory to Python path before importing custom modules
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from scripts.db import client
 
 print("Clearing DB")
 

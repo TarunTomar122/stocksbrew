@@ -248,7 +248,9 @@ def fetch_news_for_stock(
             headlines = custom_fetch_latest_headlines(search_term, 3)
             for headline in headlines:
                 link = search_and_get_link(headline.get("title"))
-                headline['url'] = link
+                print(f"    Found link using custom fetch: {link}")
+                if link:
+                    headline['url'] = link
             articles.extend(headlines)
 
             print("Found", len(articles), "articles")

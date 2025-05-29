@@ -22,7 +22,7 @@ jobs:
       run: |
         cd app
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install pymongo
         
     - name: Create data directory
       run: mkdir -p app/data
