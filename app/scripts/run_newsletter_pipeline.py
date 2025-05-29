@@ -22,12 +22,12 @@ from scripts.fetch_news import main as fetch_news
 from scripts.db import client
 
 # TEST KEYS
-# news_api_key = "ad3828da77694151a23be433536ad81f"
-# gemini_api_key = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"
+news_api_key = "ad3828da77694151a23be433536ad81f"
+gemini_api_key = "AIzaSyAyycEffMJ-NaBNgp4hYKulRFcKvH9vNIo"
 
 # PROD KEYS
-news_api_key = "ffa35669f5154e2cb785128081374d52"
-gemini_api_key = "AIzaSyABCLvv9bHzvK4K6wt9S1PPrI3_O5mXq0o"
+# news_api_key = "ffa35669f5154e2cb785128081374d52"
+# gemini_api_key = "AIzaSyABCLvv9bHzvK4K6wt9S1PPrI3_O5mXq0o"
 
 
 def manage_hot_stocks():
@@ -181,7 +181,7 @@ def main():
             email = entry.get("fields", {}).get("Email", "")
             stocks = entry.get("fields", {}).get("Selected Stocks", "")
 
-            if email and stocks:
+            if email and stocks and email == "tomartarun2001@gmail.com":
                 selected_stocks = stocks.split(", ")
                 summaries = load_summaries_from_db(selected_stocks, email)
 
