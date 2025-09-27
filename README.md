@@ -1,368 +1,83 @@
-# StocksBrew 🍺
+# StocksBrew
 
-**AI-Powered Stock Newsletter Platform for Indian Markets**
+AI-assisted daily stock-newsletter service that personalizes coverage for each subscriber. The repository hosts two deployable apps:
+- `app/` &mdash; Python pipeline that fetches news, summarizes it with Google Gemini, assembles HTML newsletters, and sends them via Brevo.
+- `homepage/` &mdash; Next.js marketing site where users subscribe, manage preferences, and browse recent summaries.
 
-An end-to-end automated system that generates personalized stock newsletters using AI-powered news analysis and delivers them via email to subscribers.
+## What StocksBrew Delivers
+- **Personalized briefings:** Summaries focus on the tickers each subscriber selected in Baserow or on the site.
+- **Daily automation:** Scheduled run pulls fresh news, generates AI summaries, refines copy, and emails subscribers by 8:00 AM local time.
+- **Beginner-friendly tone:** Prompting keeps outputs concise, emoji-enhanced, and free from trading advice.
+- **Self-serve marketing site:** Prospects can subscribe, explore recent newsletters, and unsubscribe without operator involvement.
 
-## 🏗️ Architecture Overview
-
-StocksBrew is a **serverless, GitHub Actions-powered** newsletter automation system:
-
-### 1. Frontend (`homepage/`)
-- **Landing Page**: Interactive website for user subscriptions
-- **Technology Stack**: Vanilla HTML/CSS/JavaScript + Tailwind CSS
-- **Features**: Email subscription, stock selection (40+ stocks), responsive design
-- **Deployment**: Vercel with serverless API functions
-
-### 2. Automation System (`.github/workflows/`)
-- **Pipeline Execution**: GitHub Actions workflows (no traditional backend)
-- **Scheduled Jobs**: Daily newsletter generation at 7:00 AM IST
-- **Manual Triggers**: On-demand pipeline execution
-- **Data Processing**: Python scripts for news fetching, AI analysis, and email delivery
-
-### 3. Data Layer
-- **Subscriber Management**: Airtable/Baserow for user data
-- **Content Storage**: MongoDB for news content and summaries
-- **AI Processing**: Google Gemini 2.5 Flash for content generation
-- **Email Delivery**: Brevo API for newsletter distribution
-
-## 🔄 GitHub Actions Pipeline
-
-### Automated Workflows
-
-#### 1. **Daily Newsletter Generation** (`newsletter.yml`)
-**Schedule**: 7:00 AM IST daily (1:30 UTC)
-**Trigger**: Automatic + Manual dispatch
-
-```yaml
-on:
-  schedule:
-    - cron: '30 1 * * *'  # 7:00 AM IST daily
-  workflow_dispatch:  # Manual trigger
-```
-
-#### 2. **Micro Services Newsletter** (`micro_services_newsletter.yml`) 
-**Trigger**: Manual dispatch only
-**Purpose**: Testing and manual newsletter generation
-
-#### 3. **Database Cleanup** (`clear_db.yml`)
-**Trigger**: Manual dispatch only
-**Purpose**: Clear MongoDB collections for testing
-
-### Pipeline Flow
+## High-Level Architecture
+1. **Subscriptions**
+   - Users submit email + watchlist through the Next.js site (`/api/subscribe`).
+   - Records are stored in a Baserow table (`table 564618`), with status tracking for opt-ins/outs.
+2. **Daily pipeline (`app/`)**
+   - `run_newsletter_pipeline.py` orchestrates news ingestion, summarization, refinement, newsletter generation, and email delivery.
+   - Intermediate artifacts live both in MongoDB (`stockbrew_stuff` database) and under `app/data/` for inspection.
+3. **Delivery**
+   - Newsletters render via Jinja templates, then send through Brevo (Sendinblue) transactional email API.
+4. **Marketing site (`homepage/`)**
+   - Presents the value proposition and features (animated hero, subscription form, OCR-assisted portfolio import, explore timeline, unsubscribe flow).
+   - Pulls published summaries from MongoDB to showcase real examples (`/api/summaries`).
 
 ```
-GitHub Actions Runner (ubuntu-latest)
-├── 1. Setup Environment
-│   ├── Checkout repository
-│   ├── Setup Python 3.10
-│   └── Install dependencies
-├── 2. Data Collection
-│   ├── Fetch subscriber data from Baserow/Airtable
-│   ├── Get unique stocks from subscriptions
-│   └── Fetch news from Google News RSS + NewsAPI
-├── 3. AI Processing
-│   ├── Generate summaries using Gemini AI
-│   ├── Refine content and remove redundancy
-│   └── Apply content quality guidelines
-├── 4. Newsletter Generation
-│   ├── Load HTML templates (Jinja2)
-│   ├── Personalize content per subscriber
-│   └── Generate final HTML newsletters
-└── 5. Email Delivery
-    ├── Send via Brevo API
-    └── Log delivery status
+Subscriber ➜ Next.js API ➜ Baserow ➜ Python pipeline
+            ▲              │            │
+            │              ▼            ▼
+         Explore UI   MongoDB ↔ Gemini ↔ NewsAPI
+            │                            │
+            └──────────── Brevo (Email) ◀─┘
 ```
 
-## 📊 Database Schema
+## Repository Layout
 
-### MongoDB Collections
+| Path        | Purpose                                                                 |
+|-------------|-------------------------------------------------------------------------|
+| `app/`      | Python scripts, data caches, templates, and output newsletters          |
+| `homepage/` | Next.js (App Router) marketing site with subscription and explore views |
 
-**Database**: `stockbrew_stuff`
+Each sub-project has its own README with setup, configuration, and runtime instructions.
 
-#### `regular_stocks_news`
-```json
-{
-  "_id": "ObjectId",
-  "date": "2025-01-27",
-  "news_data": {
-    "stocks_news": [
-      {
-        "stock_info": {
-          "symbol": "RELIANCE",
-          "company_name": "Reliance Industries",
-          "search_terms": ["reliance company stocks news"]
-        },
-        "articles": [
-          {
-            "title": "Article title",
-            "url": "https://...",
-            "published_at": "2025-01-27T10:00:00Z",
-            "full_content": "Article content...",
-            "search_term": "reliance company stocks news"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+## Quick Start
 
-#### `regular_stocks_summaries`
-```json
-{
-  "_id": "ObjectId",
-  "date": "2025-01-27",
-  "summaries": {
-    "RELIANCE": {
-      "tldr": "📈 Brief 2-sentence summary of key developments",
-      "sentiment": "positive",
-      "key_points": [
-        "🔥 Point 1 with specific numbers",
-        "📊 Point 2 with impact details"
-      ],
-      "action_items": [
-        "👀 What to monitor",
-        "📈 Key metrics to track"
-      ]
-    }
-  }
-}
-```
+1. **Clone & install prerequisites**
+   - Python 3.11+ with `pip` for the pipeline.
+   - Node.js 18+ and npm for the Next.js frontend.
+2. **Configure secrets**
+   - Copy `app/.env.example` (create one) and `homepage/.env.local` (create) with the environment variables listed in the sub-project READMEs.
+3. **Run components**
+   - Follow `app/README.md` to execute the daily pipeline or individual scripts.
+   - Follow `homepage/README.md` to launch the marketing site locally (`npm run dev`).
 
-#### `regular_stocks_refined_summaries`
-```json
-{
-  "_id": "ObjectId", 
-  "date": "2025-01-27",
-  "refined_summaries": {
-    // Same structure as summaries but refined by AI
-    // Removes redundancy and improves clarity
-  }
-}
-```
+## Data & Integrations
+- **NewsAPI + Google News scraping** for article discovery.
+- **Google Gemini** (`gemini-2.5-flash-preview-05-20`) for summarization and refinement.
+- **MongoDB Atlas** (`stockbrew_stuff` database) for storing news, summaries, and refined outputs.
+- **Baserow** for subscriber management.
+- **Brevo (Sendinblue)** for transactional email delivery.
 
-#### Hot Stocks Collections
-- `hot_stocks_news` - Similar to regular_stocks_news
-- `hot_stocks_summaries` - Similar to regular_stocks_summaries  
-- `hot_stocks_refined_summaries` - Similar to regular_stocks_refined_summaries
+## Automation & Scheduling
+- The orchestration script `app/scripts/run_newsletter_pipeline.py` performs idempotent checks: it only fetches/generates data missing for the current date.
+- Schedule the pipeline via cron, APScheduler, or a task runner to hit the desired daily send time.
+- Outputs per subscriber appear in `app/output/` for auditing.
 
-### Airtable Schema
+## Contributing
 
-**Base ID**: `app3Pnv4423RRK52w`
-**Table ID**: `tblptL5RJrvRLAWzg`
+1. Read the sub-project READMEs.
+2. Create topic branches per change.
+3. Run linting/tests when available (`homepage`: `npm run lint`).
+4. Submit pull requests with clear descriptions; ensure secrets are never committed.
 
-```json
-{
-  "Email": "user@example.com",
-  "Selected Stocks": "RELIANCE, TCS, INFY, HDFCBANK",
-  "Subscribed At": "2025-01-27T10:30:00.000Z",
-  "Status": "active"
-}
-```
+## Support & Roadmap Ideas
+- Extend hot-stocks flow (collections exist in MongoDB but are not fully wired).
+- Harden OCR-powered symbol extraction (currently mocked in `ImageUpload`).
+- Add automated tests and CI for both pipeline and frontend.
+- Document monitoring/alerting around pipeline runs.
 
-## 🛠️ Technical Stack
+## License
 
-### Frontend
-- **Framework**: Vanilla JavaScript (no frameworks)
-- **Styling**: Tailwind CSS
-- **Icons**: Font Awesome
-- **Deployment**: Vercel
-- **Features**: Responsive design, stock search, form validation
+Add your preferred open-source license here before publishing publicly.
 
-### Infrastructure
-- **Automation**: GitHub Actions (ubuntu-latest runners)
-- **Frontend Hosting**: Vercel
-- **Database**: MongoDB Atlas
-- **Subscriber Management**: Airtable/Baserow
-- **Email Delivery**: Brevo
-- **AI Processing**: Google Gemini API
-- **News Sources**: NewsAPI + Google News RSS
-
-## 📋 Project Status & Roadmap
-
-### ✅ Current Features
-- [x] Automated daily newsletter generation via GitHub Actions
-- [x] AI-powered news summarization using Gemini 2.5 Flash
-- [x] Personalized content per subscriber
-- [x] Responsive landing page with stock selection
-- [x] Email subscription system
-- [x] Scheduled pipeline execution (7:00 AM IST daily)
-- [x] Serverless architecture with no backend maintenance
-- [x] Hot stocks detection and integration
-- [x] Content refinement and quality control
-
-### 🔄 In Progress
-- [ ] Newsletter template optimization
-- [ ] Error handling improvements
-
-### 📝 Planned Features (User Feedback Integration)
-
-**From Yash Shenai:**
-- [ ] **Stock Monitoring Tips**: Add specific parameters to monitor for each stock
-- [ ] **Actionable Insights**: Provide clear guidance on what to watch out for
-- [ ] **Report Integration**: Explore MarketSmith India and ValueResearch Online data
-- [ ] **Technical Analysis**: Include key technical indicators and levels
-
-**From Monisha:**
-- [ ] **Monitoring Guidance**: Clear instructions on what to watch for each stock
-- [ ] **Personalized Suggestions**: AI-generated recommendations based on user's portfolio
-- [ ] **Alert System**: Notifications for significant stock movements
-- [ ] **Educational Content**: Beginner-friendly explanations of stock concepts
-
-### 🎯 Technical Roadmap
-- [ ] **A/B Testing**: Newsletter format and content variations
-- [ ] **Analytics Dashboard**: User engagement and newsletter performance metrics
-
-## 🚀 Development Setup
-
-### Prerequisites
-- GitHub account (for Actions)
-- MongoDB Atlas account  
-- Airtable/Baserow account
-- Brevo API key
-- Google Gemini API key
-- NewsAPI key
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/your-username/stocksbrew.git
-cd stocksbrew
-
-# Frontend development
-cd homepage/
-# Open index.html in browser (no build process required)
-
-# Test Python scripts locally
-cd app/
-pip install -r requirements.txt
-python -m scripts.run_newsletter_pipeline
-```
-
-### GitHub Actions Setup
-```bash
-# Required GitHub Secrets
-BREVO_API_KEY=your_brevo_api_key
-AIRTABLE_API_KEY=your_airtable_api_key  
-AIRTABLE_BASE_ID=your_base_id
-AIRTABLE_TABLE_NAME=your_table_name
-GEMINI_API_KEY=your_gemini_api_key
-NEWSAPI_KEY=your_newsapi_key
-```
-
-### Manual Workflow Triggers
-- **Daily Newsletter**: Actions → "Daily Newsletter Generation" → Run workflow
-- **Database Cleanup**: Actions → "Clear DB" → Run workflow  
-- **Testing**: Actions → "Micro Services Newsletter" → Run workflow
-
-## 🔧 Pipeline Scripts
-
-### Core Scripts (`app/scripts/`)
-
-1. **`run_newsletter_pipeline.py`**: Main orchestrator executed by GitHub Actions
-2. **`fetch_news.py`**: News aggregation from Google News RSS and NewsAPI
-3. **`generate_summary.py`**: AI-powered content summarization via Gemini
-4. **`generate_newsletter.py`**: HTML newsletter generation with Jinja2
-5. **`send_emails.py`**: Email delivery via Brevo API
-
-### Utility Scripts
-
-- **`db.py`**: MongoDB connection and configuration
-- **`utils.py`**: Helper functions for Baserow/Airtable API calls
-- **`clear_db.py`**: Database cleanup utilities (manual trigger)
-
-### Execution Flow
-
-```
-GitHub Actions Trigger
-│
-├── Environment Setup (Python 3.10, dependencies)
-│
-├── run_newsletter_pipeline.py
-    │
-    ├── manage_hot_stocks()
-    │   ├── fetch_news(hot_stocks=True)
-    │   ├── generate_summary(hot_stocks=True)  
-    │   └── refine_summaries()
-    │
-    ├── manage_regular_stocks()
-    │   ├── get_unique_stocks_from_baserow()
-    │   ├── fetch_news(hot_stocks=False)
-    │   ├── generate_summary(hot_stocks=False)
-    │   └── refine_summaries()
-    │
-    └── send_newsletters()
-        ├── get_all_entries_from_baserow()
-        ├── generate_newsletter() for each subscriber
-        └── send_newsletter_email()
-```
-
-## 🎨 Newsletter Template
-
-The newsletter uses a responsive HTML template (`app/templates/newsletter_template.html`) with:
-
-- **Sections**: Header, User Watchlist, Hot Stocks, Footer
-- **Styling**: Inline CSS for email client compatibility
-- **Template Engine**: Jinja2 for dynamic content rendering
-- **Responsive Design**: Mobile-optimized layout
-- **Personalization**: User-specific stock selections
-
-## 📊 Content Guidelines
-
-### AI Content Generation Rules
-- **No Trading Advice**: Never suggest buying/selling stocks
-- **No Price Targets**: Avoid specific price predictions
-- **Educational Focus**: Provide monitoring guidance instead
-- **Beginner-Friendly**: Use simple language and explanations
-- **Emoji Usage**: Visual elements for better engagement
-- **Concise Format**: TLDR + key points + action items
-
-### Content Quality Standards
-- Maximum 2 sentences for TLDR
-- 3-5 key points per stock
-- 2-3 actionable monitoring items
-- Remove redundant information across stocks
-- Focus on price-impacting news only
-
-## 🤝 Contributing
-
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Test thoroughly (both frontend and backend)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-### Code Standards
-- **Python**: Follow PEP 8 guidelines
-- **JavaScript**: Use ES6+ features, maintain consistent formatting
-- **Comments**: Document complex logic and API integrations
-- **Error Handling**: Implement proper exception handling
-- **Testing**: Write tests for new features
-
-### Areas for Contribution
-- **AI Prompt Engineering**: Improve content generation quality
-- **Frontend Enhancement**: Better UI/UX for subscription flow
-- **Pipeline Optimization**: Performance improvements
-- **Monitoring & Analytics**: User engagement tracking
-- **Documentation**: API documentation and tutorials
-- **Testing**: Unit and integration tests
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🔗 Links
-
-- **Production URL**: [StocksBrew Homepage](https://stocksbrew.vercel.app)
-- **GitHub Actions**: Repository → Actions tab
-- **Database**: MongoDB Atlas
-- **Email Service**: Brevo
-- **AI Engine**: Google Gemini 2.5 Flash
-
----
-
-*Built with ❤️ for the Indian stock market community*
