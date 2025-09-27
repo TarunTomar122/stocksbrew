@@ -1,0 +1,39 @@
+name: Daily Newsletter Generation
+
+on:
+  schedule:
+    - cron: '00 1 * * *'  # Runs at 7:00 AM IST daily (1:00 UTC)
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        cd app
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create data directory
+      run: mkdir -p app/data
+        
+    - name: Run newsletter pipeline
+      env:
+        NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        BASEROW_API_TOKEN: ${{ secrets.BASEROW_API_TOKEN }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      run: |
+        cd app
+        python -m scripts.run_newsletter_pipeline 

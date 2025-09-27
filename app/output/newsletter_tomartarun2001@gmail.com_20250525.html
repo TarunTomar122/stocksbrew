@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StocksBrew Daily ☕</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: #1a237e;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .date {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Stock Section */
+        .stock-section {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stock-section:last-child {
+            border-bottom: none;
+        }
+
+        .stock-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            justify-content: space-between;
+        }
+
+        .stock-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a237e;
+            flex-grow: 1;
+        }
+
+        .sentiment {
+            padding: 10px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 16px;
+        }
+
+        .sentiment.positive {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .sentiment.negative {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .sentiment.neutral {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        /* Content Sections */
+        .tldr {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a237e;
+            margin: 20px 0 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-left: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+            font-size: 16px;
+        }
+
+        li:before {
+            content: "•";
+            color: #1a237e;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stock-section {
+                padding: 15px;
+            }
+
+            .stock-name {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>StocksBrew Daily ☕</h1>
+            <div class="date">May 25, 2025</div>
+        </div>
+
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Tata Motors Ltd.</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                🚌 Tata Motors is poised to lead India's electric bus market, capitalizing on a significant future investment opportunity.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>⚡ Expected to lead India's transition to electric public and intercity transport.</li>
+                <li>💰 Positions itself for a $200 billion 'Clean Mobility' investment opportunity by 2030.</li>
+                <li>📈 Benefiting from government mandates for electric buses, driving OEM growth.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>👀 Monitor EV segment developments and sales figures.</li>
+                <li>📊 Track government policies and electric public transport tenders.</li>
+                <li>🔍 Assess broader growth in India's EV and clean energy infrastructure.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Tata Power Co. Ltd.</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                🌱 Tata Power is positioned for significant growth in India's $600B green energy market, though increasing competition from players like Reliance warrants attention.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>💰 India's sustainability sector offers a $600B investment opportunity by 2030.</li>
+                <li>⚡️ Green energy, including solar and battery storage, represents a $200B segment, supported by government.</li>
+                <li>⚠️ Increased competition, particularly from Reliance's entry into solar module production, poses a challenge.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>📈 Track new green energy project announcements and EV infrastructure initiatives.</li>
+                <li>🔍 Evaluate competitive impact from solar manufacturing, especially on profit margins.</li>
+                <li>✅ Assess long-term potential amid India's expanding green economy.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Max Healthcare Institute Ltd.</h2>
+                <span class="sentiment negative">Negative</span>
+            </div>
+
+            <div class="tldr">
+                📉 Max Healthcare reported disappointing earnings, missing EPS forecasts by 24% and prompting analyst downgrades.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>⚠️ Missed Earnings Per Share (EPS) forecast by 24%.</li>
+                <li>📊 Analysts are subsequently revising future forecasts downwards.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>🔍 Await official statements regarding the earnings miss.</li>
+                <li>📈 Monitor stock price movement and analyst rating changes.</li>
+                <li>💡 Investigate reasons for the miss to gauge future performance.</li>
+            </ul>
+        </div>
+        <div class="stock-section">
+            <div class="stock-header">
+                <h2 class="stock-name">Axis Bank Ltd.</h2>
+                <span class="sentiment positive">Positive</span>
+            </div>
+
+            <div class="tldr">
+                🚀 Axis Bank's stock emerged as a top market performer today, signaling strong positive momentum.
+            </div>
+
+            <h3 class="section-title">Key Points</h3>
+            <ul>
+                <li>💪 Recognized as a major market gainer.</li>
+                <li>📈 Experienced a significant stock price increase today.</li>
+            </ul>
+
+            <h3 class="section-title">Action Items</h3>
+            <ul>
+                <li>👀 Consult daily stock charts for detailed performance.</li>
+                <li>🔍 Research catalysts behind the gain for investment consideration.</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Generated by StocksBrew AI • All information is for reference only</p>
+        </div>
+    </div>
+</body>
+</html> 
