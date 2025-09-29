@@ -20,6 +20,33 @@ from scripts.db import client
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+
+def extract_json_from_text(text: str) -> str:
+    """Extract a JSON object from the model response string.
+
+    Handles code fences (```json ... ``` or ``` ... ```). If not found,
+    falls back to substring between the first '{' and the last '}'.
+    """
+    if not isinstance(text, str):
+        return "{}"
+    t = text.strip()
+    if '```json' in t:
+        try:
+            t = t.split('```json', 1)[1].split('```', 1)[0]
+            return t.strip()
+        except Exception:
+            pass
+    if '```' in t:
+        try:
+            t = t.split('```', 1)[1].split('```', 1)[0]
+            return t.strip()
+        except Exception:
+            pass
+    start = t.find('{')
+    end = t.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        return t[start:end+1]
+    return t
 INPUT_FILE = os.path.join(DATA_DIR, 'news_content.json')
 OUTPUT_FILE = os.path.join(DATA_DIR, 'summaries.json')
 BATCH_SIZE = 5  # Process stocks in batches to manage memory
@@ -163,10 +190,12 @@ def process_stock_batch(batch, gemini_model):
         if content:
             summary = generate_summary(content, gemini_model)
             if summary:
-                # parse the summary into a json object
-                # strip off fencing if present
-                summary = summary.strip('```json').strip('```')
-                summary_json = json.loads(summary)
+                try:
+                    json_text = extract_json_from_text(summary)
+                    summary_json = json.loads(json_text)
+                except json.JSONDecodeError as e:
+                    print(f"⚠️ Error parsing JSON for {stock_name}: {e}")
+                    continue
                 # Skip saving if the summary indicates no material news
                 if is_non_material_summary(summary_json):
                     print(f"⏭️  Skipping {stock_name} — no material news.")

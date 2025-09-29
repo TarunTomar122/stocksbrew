@@ -265,7 +265,10 @@ def fetch_news_for_stock(
 
             # Add metadata and fetch full content for each article
             for article in articles:
-                url = article['url']
+                url = article.get('url')
+                # Skip if URL is missing or not a valid http(s) URL
+                if not url or not isinstance(url, str) or not url.startswith(('http://', 'https://')):
+                    continue
                 article['search_term'] = search_term
                 article['fetched_at'] = datetime.now().isoformat()
                 
