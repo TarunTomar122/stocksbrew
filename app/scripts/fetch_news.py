@@ -41,6 +41,8 @@ HEADERS = {
 
 def get_final_url(base_url):
     try:
+        if not base_url or not isinstance(base_url, str):
+            return None
         decoded_url = gnewsdecoder(base_url)
         if decoded_url.get("status"):
             return decoded_url["decoded_url"]
@@ -48,7 +50,7 @@ def get_final_url(base_url):
             return base_url
     except Exception as e:
         print(f"Error decoding URL: {e}")
-        return None
+        return base_url if isinstance(base_url, str) else None
 
 def custom_fetch_latest_headlines(search_text, num_headlines):
     # Fetch headlines from Google News RSS feed
@@ -86,16 +88,36 @@ def custom_fetch_latest_headlines(search_text, num_headlines):
             
             if title_tag and link_tag and pubdate_tag:
                 # Get the URL which is the text content after the link tag
-                url = link_tag.next_sibling.strip()
+                next_sibling = link_tag.next_sibling
+                if next_sibling and isinstance(next_sibling, str):
+                    url = next_sibling.strip()
+                else:
+                    # Fallback: try to get URL from link tag text content
+                    url = link_tag.get_text().strip() if link_tag.get_text() else None
+                
                 # Parse the publication date (already timezone-aware)
-                pub_date = parsedate_to_datetime(pubdate_tag.text.strip())
+                pubdate_text = pubdate_tag.text if pubdate_tag.text else ""
+                if not pubdate_text:
+                    continue
+                try:
+                    pub_date = parsedate_to_datetime(pubdate_text.strip())
+                    if not pub_date:
+                        continue
+                except Exception as e:
+                    print(f"    ⚠️ Error parsing date '{pubdate_text}': {e}")
+                    continue
+                
+                # Get title text safely
+                title_text = title_tag.text if title_tag.text else ""
+                if not title_text:
+                    continue
                 
                 # Include articles from start of yesterday until now
-                if (title_tag.text.strip() and url and 
+                if (title_text.strip() and url and 
                     pub_date >= start_of_yesterday and 
                     pub_date <= current_time):
                     filtered_headlines.append({
-                        'title': title_tag.text.strip(),
+                        'title': title_text.strip(),
                         'url': get_final_url(url),
                         'published_at': pub_date.isoformat(),
                         'fetched_at': current_time.isoformat(),
@@ -109,7 +131,9 @@ def custom_fetch_latest_headlines(search_text, num_headlines):
         return filtered_headlines[:num_headlines]
         
     except Exception as e:
+        import traceback
         print(f"    ❌ Error fetching news for '{search_text}': {str(e)}")
+        print(f"    📍 Traceback: {traceback.format_exc()}")
         return []
 
 
