@@ -12,11 +12,15 @@ interface DaySummaries {
   summaries: Record<string, Summary>
 }
 
-const uri = process.env.MONGODB_URI as string
-
 let client: MongoClient | null = null
 
 async function getMongoClient() {
+  const uri = process.env.MONGODB_URI as string
+  
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not set')
+  }
+  
   if (!client) {
     client = new MongoClient(uri, {
       serverApi: {

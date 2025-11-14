@@ -1,18 +1,25 @@
 import { NextResponse } from 'next/server'
 import { MongoClient, ServerApi } from 'mongodb'
 
-// MongoDB connection via environment variable
-const uri = process.env.MONGODB_URI as string
-
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: '1' as const,
-    strict: true,
-    deprecationErrors: true,
-  }
-})
-
 export async function GET() {
+  // MongoDB connection via environment variable
+  const uri = process.env.MONGODB_URI as string
+  
+  if (!uri) {
+    return NextResponse.json(
+      { error: 'MongoDB URI not configured' },
+      { status: 500 }
+    )
+  }
+
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: '1' as const,
+      strict: true,
+      deprecationErrors: true,
+    }
+  })
+
   try {
     await client.connect()
     
