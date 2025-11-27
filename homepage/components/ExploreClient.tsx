@@ -5,8 +5,8 @@ import React, { useState } from 'react'
 interface Summary {
   tldr: string
   sentiment: 'positive' | 'negative' | 'neutral'
-  key_points: string[]
-  action_items: string[]
+  key_points: (string | any)[]
+  action_items: (string | any)[]
 }
 
 interface DaySummaries {
@@ -19,7 +19,12 @@ interface ExploreClientProps {
 }
 
 export default function ExploreClient({ summaries }: ExploreClientProps) {
-  const [selectedDate, setSelectedDate] = useState<string>(summaries.length > 0 ? summaries[0].date : '')
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (summaries.length === 0) return ''
+    // Find first date with data
+    const firstWithData = summaries.find(s => Object.keys(s.summaries).length > 0)
+    return firstWithData ? firstWithData.date : summaries[0].date
+  })
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -41,6 +46,7 @@ export default function ExploreClient({ summaries }: ExploreClientProps) {
   }
 
   const parseMarkdownBold = (text: string) => {
+    if (typeof text !== 'string') return text
     // Split text by **text** pattern and render bold
     const parts = text.split(/(\*\*[^*]+\*\*)/g)
     
@@ -52,6 +58,34 @@ export default function ExploreClient({ summaries }: ExploreClientProps) {
       }
       return part
     })
+  }
+
+  const renderContent = (content: string | any) => {
+    if (typeof content === 'string') {
+      return parseMarkdownBold(content)
+    }
+    if (typeof content === 'object' && content !== null) {
+      // Handle known object structures
+      if (content.title && content.summary) {
+        return (
+          <span>
+            <strong>{content.title}</strong>: {parseMarkdownBold(content.summary)}
+          </span>
+        )
+      }
+      if (content.point && content.details) {
+        return (
+          <span>
+            {parseMarkdownBold(content.point)} {parseMarkdownBold(content.details)}
+          </span>
+        )
+      }
+      // Fallback: try to render values
+      return Object.values(content).map((val: any, i) => (
+        <span key={i}>{typeof val === 'string' ? parseMarkdownBold(val) : JSON.stringify(val)} </span>
+      ))
+    }
+    return String(content)
   }
 
   const filterRelevantStocks = (summaries: Record<string, Summary>) => {
@@ -177,7 +211,7 @@ export default function ExploreClient({ summaries }: ExploreClientProps) {
                       <ul className="space-y-2">
                         {summary.key_points.map((point, pointIndex) => (
                           <li key={pointIndex} className="text-gray-700 leading-relaxed">
-                            {parseMarkdownBold(point)}
+                            {renderContent(point)}
                           </li>
                         ))}
                       </ul>
@@ -191,7 +225,7 @@ export default function ExploreClient({ summaries }: ExploreClientProps) {
                       <ul className="space-y-2">
                         {summary.action_items.map((item, itemIndex) => (
                           <li key={itemIndex} className="text-gray-700 leading-relaxed">
-                            {parseMarkdownBold(item)}
+                            {renderContent(item)}
                           </li>
                         ))}
                       </ul>

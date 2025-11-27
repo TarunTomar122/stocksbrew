@@ -238,7 +238,7 @@ def main(api_key):
     
     # Initialize Gemini model
     genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
+    gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 
     # Process stocks in batches
     summaries = {}

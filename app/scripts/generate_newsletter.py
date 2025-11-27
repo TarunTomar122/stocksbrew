@@ -33,7 +33,7 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY_PROD")
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 
 def load_hot_stocks_summaries():

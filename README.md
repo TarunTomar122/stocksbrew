@@ -54,7 +54,7 @@ Each sub-project has its own README with setup, configuration, and runtime instr
 
 ## Data & Integrations
 - **NewsAPI + Google News scraping** for article discovery.
-- **Google Gemini** (`gemini-2.5-flash-preview-05-20`) for summarization and refinement.
+- **Google Gemini** (`gemini-2.5-flash`) for summarization and refinement.
 - **MongoDB Atlas** (`stockbrew_stuff` database) for storing news, summaries, and refined outputs.
 - **Baserow** for subscriber management.
 - **Brevo (Sendinblue)** for transactional email delivery.
