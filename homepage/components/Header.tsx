@@ -1,16 +1,18 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Header() {
   const router = useRouter()
+  const pathname = usePathname()
+  
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between cursor-pointer" onClick={() => router.push('/')}>
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
             <img 
               src="/logo.png" 
               alt="StocksBrew Logo" 
@@ -19,22 +21,32 @@ export default function Header() {
             <span className="text-xl font-bold text-black">StocksBrew</span>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex items-center space-x-4">
-            <a href="/sentiment" className="text-gray-600 hover:text-black transition-colors">
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
+            <a 
+              href="/sentiment" 
+              className={`text-gray-600 hover:text-black transition-colors pb-1 ${
+                pathname === '/sentiment' ? 'border-b-2 border-black text-black' : ''
+              }`}
+            >
               Explore
             </a>
-            <button 
-              onClick={() => {
-                const subscriptionSection = document.getElementById('subscription')
-                if (subscriptionSection) {
-                  subscriptionSection.scrollIntoView({ behavior: 'smooth' })
-                }
-              }}
-              className="bg-black text-white px-6 py-2 font-medium hover:bg-gray-800 transition-colors"
+            <a 
+              href="/performance" 
+              className={`text-gray-600 hover:text-black transition-colors pb-1 ${
+                pathname === '/performance' ? 'border-b-2 border-black text-black' : ''
+              }`}
             >
-              Subscribe
-            </button>
+              Performance
+            </a>
+            <a 
+              href="/demo" 
+              className={`text-gray-600 hover:text-black transition-colors pb-1 ${
+                pathname === '/demo' ? 'border-b-2 border-black text-black' : ''
+              }`}
+            >
+              Demo
+            </a>
           </div>
         </div>
       </div>

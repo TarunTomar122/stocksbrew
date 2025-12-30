@@ -87,13 +87,13 @@ def generate_sentiment_score(summary_data):
 
 def backfill_regular_stocks_summaries():
     """Backfill sentiment scores for regular stocks summaries"""
-    print("📊 Backfilling regular stocks summaries (last 15 days)...")
+    print("📊 Backfilling regular stocks summaries (Nov 1, 2025 to Dec 15, 2025)...")
     
     collection = client.stockbrew_stuff.regular_stocks_summaries
     
-    # Calculate date range (last 15 days)
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=15)
+    # Calculate date range - Nov 1, 2025 to Dec 15, 2025
+    start_date = datetime(2025, 11, 1)
+    end_date = datetime(2025, 12, 15)
     
     # Format dates as YYYY-MM-DD
     start_date_str = start_date.strftime("%Y-%m-%d")
@@ -142,8 +142,8 @@ def backfill_regular_stocks_summaries():
             
             print(f"    ✅ {company_name} - added sentiment_score: {sentiment_score}")
             
-            # Rate limiting - wait 2 seconds between API calls
-            time.sleep(2)
+            # Rate limiting - wait 1 second between API calls
+            time.sleep(1)
         
         # Update document in database
         collection.update_one(
@@ -159,13 +159,13 @@ def backfill_regular_stocks_summaries():
 
 def backfill_refined_summaries():
     """Backfill sentiment scores for refined summaries"""
-    print("\n📊 Backfilling refined stocks summaries (last 15 days)...")
+    print("\n📊 Backfilling refined stocks summaries (Nov 1, 2025 to Dec 15, 2025)...")
     
     collection = client.stockbrew_stuff.regular_stocks_refined_summaries
     
-    # Calculate date range (last 15 days)
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=15)
+    # Calculate date range - Nov 1, 2025 to Dec 15, 2025
+    start_date = datetime(2025, 11, 1)
+    end_date = datetime(2025, 12, 15)
     
     # Format dates as YYYY-MM-DD
     start_date_str = start_date.strftime("%Y-%m-%d")
@@ -214,8 +214,8 @@ def backfill_refined_summaries():
             
             print(f"    ✅ {company_name} - added sentiment_score: {sentiment_score}")
             
-            # Rate limiting - wait 2 seconds between API calls
-            time.sleep(2)
+            # Rate limiting - wait 1 second between API calls
+            time.sleep(1)
         
         # Update document in database
         collection.update_one(

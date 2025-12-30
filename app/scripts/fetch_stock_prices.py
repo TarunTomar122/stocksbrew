@@ -304,7 +304,7 @@ def main():
     
     try:
         # Fetch prices for last 15 days
-        store_stock_prices_for_summaries(days_back=15)
+        store_stock_prices_for_summaries(days_back=45)
         
         print("\n✅ All done! Stock prices have been added to your summaries.")
         print("💡 Tip: Run this script daily to keep prices updated")
