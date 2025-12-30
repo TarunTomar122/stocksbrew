@@ -9,10 +9,10 @@ import json
 import os
 import sys
 import google.generativeai as genai
-from typing import Dict, Any
+from typing import Dict, Any, List
 import gc
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from scripts.db import client
 
@@ -65,6 +65,52 @@ def load_news_content():
         return {"stocks_news": []}
 
 
+def get_historical_context(company_name: str, days_back: int = 5) -> str:
+    """Fetch historical sentiment, news, and prices for the last N days"""
+    try:
+        summaries_collection = client.stockbrew_stuff.regular_stocks_summaries
+        
+        # Get date range
+        today = datetime.now()
+        start_date = (today - timedelta(days=days_back)).strftime("%Y-%m-%d")
+        yesterday = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+        
+        # Fetch historical data in one query
+        historical_docs = summaries_collection.find({
+            "date": {"$gte": start_date, "$lt": today.strftime("%Y-%m-%d")}
+        }).sort("date", -1).limit(days_back)
+        
+        context_parts = []
+        for doc in historical_docs:
+            if 'summaries' in doc and company_name in doc['summaries']:
+                stock_data = doc['summaries'][company_name]
+                date = doc['date']
+                
+                sentiment_score = stock_data.get('sentiment_score')
+                sentiment = stock_data.get('sentiment', 'neutral')
+                price = stock_data.get('stock_price')
+                tldr = stock_data.get('tldr', '')
+                
+                # Format price
+                price_str = f"${price:.2f}" if price and price < 1000 else f"₹{price:.2f}" if price else "N/A"
+                
+                # Truncate tldr if too long
+                if tldr and len(tldr) > 100:
+                    tldr = tldr[:100] + "..."
+                
+                context_parts.append(
+                    f"📅 {date}: Sentiment {sentiment} ({sentiment_score if sentiment_score else 'N/A'}), "
+                    f"Price {price_str} - {tldr if tldr else 'No summary'}"
+                )
+        
+        if context_parts:
+            return "\n    ".join(context_parts)
+        return None
+    except Exception as e:
+        print(f"⚠️  Could not fetch historical context: {e}")
+        return None
+
+
 def prepare_content_for_analysis(stock_news):
     """Prepare news content for AI analysis"""
     stock_info = stock_news['stock_info']
@@ -106,12 +152,18 @@ def is_non_material_summary(summary_json: Dict[str, Any]) -> bool:
     except Exception:
         return False
 
-def generate_summary(content, gemini_model):
+def generate_summary(content, gemini_model, company_name: str = None):
     """Generate AI summary for stock news content using Gemini"""
+    
+    # Fetch historical context if company name provided
+    historical_context = None
+    if company_name:
+        historical_context = get_historical_context(company_name, days_back=5)
     
     example_json = '''{
     "tldr": "📉 Company hit by $300M cyberattack — short-term pain expected.",
     "sentiment": "negative",
+    "sentiment_score": -0.7,
     "key_points": [
         "🔒 Cyberattack may cut profits by $300M due to online sales suspension. This is a major revenue loss for the company. It is expected to have a negative impact on the stock price.",
     ],
@@ -120,28 +172,53 @@ def generate_summary(content, gemini_model):
     empty_json = '''{
     "tldr": "No material news affecting stock price.",
     "sentiment": "neutral",
+    "sentiment_score": 0,
     "key_points": [],
 }'''
     
+    # Build context section
+    context_section = ""
+    if historical_context:
+        context_section = f"""
+    ### 📊 Historical Context (Last 5 Days):
+    {historical_context}
+    
+    💡 Use this context to:
+    - Detect if today's news continues or reverses recent trends
+    - Assign more nuanced sentiment scores (e.g., bad news after good trend = more negative)
+    - Understand if the market already priced in similar news
+    - Identify if this is an escalation or de-escalation of an ongoing situation
+    
+    ---
+    """
+    
     prompt = f"""
-    You're given raw news content about a company from the last 24 hours. 
+    You're given raw news content about a company from TODAY (the current day only). 
     Summarize only the parts that could affect the company's stock price.
+    {context_section}
 
     🎯 Your goal:
     Make it **ultra clear** for beginners who want quick, bite-sized insights.
 
     ### What to do:
-    - Extract **only price-impacting information**
+    - Extract **only price-impacting information from TODAY's news**
     - Make it **concise**, **easy to scan**, and **actionable**
     - Use **emojis**, **numbers**, and **bold keywords** to improve readability
     - Avoid technical jargon
+    - Assign a sentiment score between -1 (very negative) to +1 (very positive)
+      * Use the full range: don't default to 0 easily
+      * -1.0 to -0.6: Very negative (major losses, scandals, regulatory issues)
+      * -0.5 to -0.2: Moderately negative (missed targets, minor concerns)
+      * -0.1 to +0.1: Neutral (routine news with minimal impact)
+      * +0.2 to +0.5: Moderately positive (good results, minor wins)
+      * +0.6 to +1.0: Very positive (major contracts, breakthrough results)
 
     ### What to avoid:
     - NEVER suggest **buying**, **selling**, or **trading** a stock.  
     - DO NOT include:  
         - Buy/sell/accumulate/hold/exit  
-        - Target prices (e.g., “Target ₹400”)  
-        - Stop losses (e.g., “SL at ₹360”)  
+        - Target prices (e.g., "Target ₹400")  
+        - Stop losses (e.g., "SL at ₹360")  
         - Technical trading setups (e.g., breakout, support, RSI)
 
     ---
@@ -159,6 +236,7 @@ def generate_summary(content, gemini_model):
     - Each key point must be detailed summary of the news in a easy to read format
     - Do NOT include unrelated business, HR, or CSR news
     - Never include more than 2 points in any category.
+    - **sentiment_score** must be a number between -1 and 1 (use decimals, avoid 0 unless truly neutral)
     - If news has **no major stock impact**, return:  
     {empty_json}
     """
@@ -188,7 +266,7 @@ def process_stock_batch(batch, gemini_model):
         
         content = prepare_content_for_analysis(stock_news)
         if content:
-            summary = generate_summary(content, gemini_model)
+            summary = generate_summary(content, gemini_model, company_name=stock_name)
             if summary:
                 try:
                     json_text = extract_json_from_text(summary)

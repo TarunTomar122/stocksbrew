@@ -61,7 +61,8 @@ Each sub-project has its own README with setup, configuration, and runtime instr
 
 ## Automation & Scheduling
 - The orchestration script `app/scripts/run_newsletter_pipeline.py` performs idempotent checks: it only fetches/generates data missing for the current date.
-- Schedule the pipeline via cron, APScheduler, or a task runner to hit the desired daily send time.
+- **GitHub Actions workflow**: The `.github/workflows/daily-newsletter.yml` file automates the daily pipeline run at 6:00 AM UTC. You can also trigger it manually from the Actions tab.
+- The pipeline now includes stock price fetching using `yfinance` to power sentiment analysis charts on the frontend.
 - Outputs per subscriber appear in `app/output/` for auditing.
 
 ## Contributing

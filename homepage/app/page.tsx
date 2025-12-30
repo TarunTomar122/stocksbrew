@@ -37,8 +37,8 @@ export default function HomePage() {
               >
                 Subscribe →
               </button>
-              <a href="/explore" className="text-black border border-gray-300 px-8 py-4 font-medium hover:bg-gray-50 transition-colors">
-                See Examples
+              <a href="/sentiment" className="text-black border border-gray-300 px-8 py-4 font-medium hover:bg-gray-50 transition-colors">
+                Explore
               </a>
             </div>
           </div>

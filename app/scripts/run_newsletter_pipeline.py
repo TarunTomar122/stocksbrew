@@ -21,6 +21,7 @@ from scripts.generate_newsletter import (
     save_newsletter,
 )
 from scripts.fetch_news import main as fetch_news
+from scripts.fetch_stock_prices import store_stock_prices_for_summaries
 from scripts.db import client
 from scripts.utils import BASEROW_CONFIG
 
@@ -82,6 +83,15 @@ def manage_regular_stocks():
             print("❌ No summaries found to refine")
     else:
         print("✅ Regular stocks refined summaries already generated for today")
+
+    # Fetch stock prices for today
+    print("📈 Fetching stock prices for today...")
+    try:
+        store_stock_prices_for_summaries(days_back=1)  # Only fetch for today
+        print("✅ Stock prices fetched successfully")
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to fetch stock prices: {e}")
+        # Don't fail the whole pipeline if stock prices fail
 
 
 def load_summaries_from_db(selected_stocks, email):

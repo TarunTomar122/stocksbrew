@@ -5,6 +5,9 @@ import React, { useState } from 'react'
 interface Summary {
   tldr: string
   sentiment: 'positive' | 'negative' | 'neutral'
+  sentiment_score?: number
+  stock_price?: number
+  stock_symbol?: string
   key_points: (string | any)[]
   action_items: (string | any)[]
 }

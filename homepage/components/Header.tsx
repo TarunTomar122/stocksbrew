@@ -21,7 +21,7 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="flex items-center space-x-4">
-            <a href="/explore" className="text-gray-600 hover:text-black transition-colors">
+            <a href="/sentiment" className="text-gray-600 hover:text-black transition-colors">
               Explore
             </a>
             <button 

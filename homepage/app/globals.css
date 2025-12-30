@@ -13,6 +13,40 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
   }
+
+  /* Hide all scrollbars by default */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* Show minimal scrollbar on hover for scrollable elements */
+  *:hover {
+    scrollbar-width: thin; /* Firefox */
+  }
+  
+  *:hover::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+    height: 6px;
+  }
+  
+  *:hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  *:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  *:hover::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
 }
 
 @layer components {
@@ -74,13 +108,36 @@
   }
 }
 
-/* Hide scrollbar */
+/* Hide scrollbar by default */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
   scrollbar-width: none;  /* Firefox */
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
+}
+
+/* Show minimal scrollbar on hover and scroll */
+.scrollbar-hide:hover {
+  scrollbar-width: thin;  /* Firefox */
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
 } 
 
 /* Hide focus outline from inputs */
