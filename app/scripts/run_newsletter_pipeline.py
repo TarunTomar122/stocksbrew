@@ -84,10 +84,10 @@ def manage_regular_stocks():
     else:
         print("✅ Regular stocks refined summaries already generated for today")
 
-    # Fetch stock prices for today
-    print("📈 Fetching stock prices for today...")
+    # Fetch stock prices for last 15 days (to backfill any gaps)
+    print("📈 Fetching stock prices for last 15 days...")
     try:
-        store_stock_prices_for_summaries(days_back=1)  # Only fetch for today
+        store_stock_prices_for_summaries(days_back=15)  # Fetch last 15 days to fill gaps
         print("✅ Stock prices fetched successfully")
     except Exception as e:
         print(f"⚠️  Warning: Failed to fetch stock prices: {e}")

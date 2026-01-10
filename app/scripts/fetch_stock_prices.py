@@ -251,9 +251,11 @@ def store_stock_prices_for_summaries(days_back=30):
         doc_updated = False
         
         for company_name, summary in summaries.items():
-            # Skip if already has price
-            if 'stock_price' in summary and summary['stock_price'] is not None:
-                print(f"  ✓ {company_name} - already has price")
+            # Skip if already has price AND it's for today (no need to re-fetch today's price)
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            if ('stock_price' in summary and summary['stock_price'] is not None 
+                and date == today_str):
+                print(f"  ✓ {company_name} - already has today's price")
                 updated_summaries[company_name] = summary
                 continue
             
