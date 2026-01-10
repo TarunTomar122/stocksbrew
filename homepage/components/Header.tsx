@@ -39,14 +39,6 @@ export default function Header() {
             >
               Performance
             </a>
-            <a 
-              href="/demo" 
-              className={`text-gray-600 hover:text-black transition-colors pb-1 ${
-                pathname === '/demo' ? 'border-b-2 border-black text-black' : ''
-              }`}
-            >
-              Demo
-            </a>
           </div>
         </div>
       </div>

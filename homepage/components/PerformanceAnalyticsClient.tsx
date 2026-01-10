@@ -141,12 +141,41 @@ interface PerformanceData {
   returns: ReturnsData
 }
 
+interface PortfolioMetrics {
+  tradeLog: Array<{
+    tradeId: number
+    entryDate: string
+    exitDate: string
+    stock: string
+    position: 'LONG' | 'SHORT'
+    entryPrice: number
+    exitPrice: number
+    profitLoss: number
+    sentiment: number
+    shares: number
+    status: 'CLOSED'
+  }>
+  metrics: {
+    startingCapital: number
+    maxCapitalUsed: number
+    totalProfit: number
+    returnOnCapitalUsed: number
+    totalReturn: number
+    totalTrades: number
+    winningTrades: number
+    losingTrades: number
+    highAccuracyStocks: string[]
+    stocksUsed: string[]
+  }
+}
+
 export default function PerformanceAnalyticsClient() {
   const [data, setData] = useState<PerformanceData | null>(null)
+  const [portfolioData, setPortfolioData] = useState<PortfolioMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'returns' | 'stocks'>('overview')
-  const [timeRange, setTimeRange] = useState<7 | 30 | 90>(30)
+  const [activeTab, setActiveTab] = useState<'overview' | 'returns' | 'stocks' | 'portfolio'>('overview')
+  const [timeRange, setTimeRange] = useState<30 | 'all'>(30)
   const [smoothingMethod, setSmoothingMethod] = useState<'daily' | 'rolling3Day' | 'rolling5Day'>('daily')
 
   useEffect(() => {
@@ -156,10 +185,17 @@ export default function PerformanceAnalyticsClient() {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/performance?days=${timeRange}`)
-      if (!response.ok) throw new Error('Failed to fetch performance data')
-      const result = await response.json()
-      setData(result)
+      const days = timeRange === 'all' ? 365 : timeRange
+      const [perfResponse, portfolioResponse] = await Promise.all([
+        fetch(`/api/performance?days=${days}`),
+        fetch(`/api/demo-portfolio?days=${days}`)
+      ])
+      if (!perfResponse.ok) throw new Error('Failed to fetch performance data')
+      if (!portfolioResponse.ok) throw new Error('Failed to fetch portfolio data')
+      const perfResult = await perfResponse.json()
+      const portfolioResult = await portfolioResponse.json()
+      setData(perfResult)
+      setPortfolioData(portfolioResult)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -268,16 +304,6 @@ export default function PerformanceAnalyticsClient() {
           {/* Time Range Selector */}
           <div className="flex gap-2">
             <button
-              onClick={() => setTimeRange(7)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                timeRange === 7 
-                  ? 'bg-black text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              7 Days
-            </button>
-            <button
               onClick={() => setTimeRange(30)}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 timeRange === 30 
@@ -288,9 +314,9 @@ export default function PerformanceAnalyticsClient() {
               1 Month
             </button>
             <button
-              onClick={() => setTimeRange(90)}
+              onClick={() => setTimeRange('all')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${
-                timeRange === 90 
+                timeRange === 'all' 
                   ? 'bg-black text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
@@ -375,6 +401,16 @@ export default function PerformanceAnalyticsClient() {
           }`}
         >
           Returns
+        </button>
+        <button
+          onClick={() => setActiveTab('portfolio')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            activeTab === 'portfolio' 
+              ? 'border-black text-black' 
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Portfolio Sim
         </button>
       </div>
 
@@ -1121,6 +1157,147 @@ export default function PerformanceAnalyticsClient() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'portfolio' && portfolioData && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white p-6">
+            <h3 className="text-lg font-semibold mb-2">Portfolio Simulation</h3>
+            <p className="text-sm text-gray-500">
+              Simulating a real portfolio with ₹50K available capital using our 3-day rolling average strategy on high-accuracy stocks, 
+              with dynamic position sizing based on sentiment conviction. Trading weekdays only (markets closed on weekends).
+            </p>
+          </div>
+
+          {/* Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="bg-white p-5 border border-gray-200">
+              <div className="text-sm text-gray-500 mb-1">Max Capital Used</div>
+              <div className="text-2xl font-bold text-gray-900">
+                ₹{portfolioData.metrics.maxCapitalUsed.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                {((portfolioData.metrics.maxCapitalUsed / portfolioData.metrics.startingCapital) * 100).toFixed(1)}% of ₹50K
+              </div>
+            </div>
+            
+            <div className="bg-white p-5 border border-gray-200">
+              <div className="text-sm text-gray-500 mb-1">ROI on Capital</div>
+              <div className={`text-2xl font-bold ${portfolioData.metrics.returnOnCapitalUsed >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {portfolioData.metrics.returnOnCapitalUsed >= 0 ? '+' : ''}{portfolioData.metrics.returnOnCapitalUsed.toFixed(2)}%
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                on capital deployed
+              </div>
+            </div>
+            
+            <div className="bg-white p-5 border border-gray-200">
+              <div className="text-sm text-gray-500 mb-1">Total Profit</div>
+              <div className={`text-2xl font-bold ${portfolioData.metrics.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {portfolioData.metrics.totalProfit >= 0 ? '+' : ''}₹{Math.abs(portfolioData.metrics.totalProfit).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                {portfolioData.metrics.totalTrades} trades
+              </div>
+            </div>
+            
+            <div className="bg-white p-5 border border-gray-200">
+              <div className="text-sm text-gray-500 mb-1">Win Rate</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {portfolioData.metrics.totalTrades > 0 
+                  ? `${((portfolioData.metrics.winningTrades / portfolioData.metrics.totalTrades) * 100).toFixed(1)}%`
+                  : '0%'
+                }
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {portfolioData.metrics.winningTrades}W / {portfolioData.metrics.losingTrades}L
+              </div>
+            </div>
+            
+            <div className="bg-white p-5 border border-gray-200">
+              <div className="text-sm text-gray-500 mb-1">Stocks Used</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {portfolioData.metrics.stocksUsed.length}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                high accuracy
+              </div>
+            </div>
+          </div>
+
+          {/* Trade Log Table */}
+          <div className="bg-white p-6">
+            <h3 className="text-lg font-semibold mb-4">Recent Trades</h3>
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-3 font-medium text-gray-600">Stock</th>
+                    <th className="text-center py-3 px-3 font-medium text-gray-600">Position</th>
+                    <th className="text-center py-3 px-3 font-medium text-gray-600">Shares</th>
+                    <th className="text-center py-3 px-3 font-medium text-gray-600">Entry</th>
+                    <th className="text-center py-3 px-3 font-medium text-gray-600">Exit</th>
+                    <th className="text-center py-3 px-3 font-medium text-gray-600">P/L</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {portfolioData.tradeLog.slice().reverse().slice(0, 20).map((trade) => (
+                    <tr key={trade.tradeId} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-3 font-medium text-gray-900">{trade.stock}</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`text-xs font-semibold px-2 py-1 ${
+                          trade.position === 'LONG' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {trade.position === 'LONG' ? '📈 LONG' : '📉 SHORT'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-center font-bold text-gray-900">{trade.shares}×</td>
+                      <td className="py-3 px-3 text-center">
+                        <div className="text-xs text-gray-500">{formatDate(trade.entryDate)}</div>
+                        <div className="text-sm">₹{trade.entryPrice.toFixed(2)}</div>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <div className="text-xs text-gray-500">{formatDate(trade.exitDate)}</div>
+                        <div className="text-sm">₹{trade.exitPrice.toFixed(2)}</div>
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`font-bold ${trade.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {trade.profitLoss >= 0 ? '+' : ''}₹{Math.abs(trade.profitLoss).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Strategy Explanation */}
+          <div className="bg-white p-6 border border-gray-200">
+            <h3 className="text-lg font-semibold mb-4">How It Works</h3>
+            <div className="grid md:grid-cols-3 gap-6 text-sm">
+              <div>
+                <h4 className="font-semibold mb-2 text-gray-900">📊 Signal Generation</h4>
+                <p className="text-gray-600 leading-relaxed">
+                  3-day rolling average of sentiment scores smooths out noise and focuses on sustained trends.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-gray-900">🎯 Stock Selection</h4>
+                <p className="text-gray-600 leading-relaxed">
+                  Only trade stocks with ≥50% historical accuracy and at least 5 predictions.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-gray-900">💰 Position Sizing</h4>
+                <p className="text-gray-600 leading-relaxed">
+                  Dynamic shares (1-5×) based on sentiment strength. Higher conviction = more shares.
+                </p>
+              </div>
             </div>
           </div>
         </div>

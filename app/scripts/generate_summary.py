@@ -119,11 +119,17 @@ def prepare_content_for_analysis(stock_news):
     if not articles:
         return None
     
+    today_str = datetime.now().strftime('%Y-%m-%d')
     content = f"Stock: {stock_info['company_name']} ({stock_info['symbol']})\n"
+    content += f"Today's Date: {today_str}\n"
     content += "Recent News Articles:\n\n"
     
     for i, article in enumerate(articles[:5], 1):  # Limit to top 5 articles
         content += f"{i}. Title: {article['title']}\n"
+        # Add publication date if available
+        pub_date = article.get('published_at') or article.get('publishedAt')
+        if pub_date:
+            content += f"   Published: {pub_date}\n"
         if article.get('full_content'):
             # Truncate content to manage memory
             full_content = (
@@ -213,6 +219,13 @@ def generate_summary(content, gemini_model, company_name: str = None):
       * +0.2 to +0.5: Moderately positive (good results, minor wins)
       * +0.6 to +1.0: Very positive (major contracts, breakthrough results)
 
+    ### ⚠️ CRITICAL - Filter Out Old/Repetitive News:
+    - **IGNORE** any news from previous days, weeks, or months
+    - **SKIP** repetitive content that's already been covered in historical context
+    - If multiple articles say the same thing, mention it ONCE only
+    - If all news is outdated/repetitive, return the "no material news" response
+    - Focus ONLY on NEW developments from TODAY
+
     ### What to avoid:
     - NEVER suggest **buying**, **selling**, or **trading** a stock.  
     - DO NOT include:  
@@ -220,6 +233,8 @@ def generate_summary(content, gemini_model, company_name: str = None):
         - Target prices (e.g., "Target ₹400")  
         - Stop losses (e.g., "SL at ₹360")  
         - Technical trading setups (e.g., breakout, support, RSI)
+        - Old news that was already covered in previous days
+        - Repetitive information from multiple articles
 
     ---
 

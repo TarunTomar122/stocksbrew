@@ -8,7 +8,7 @@ then creates a beautiful HTML newsletter using templates.
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import google.generativeai as genai
 from jinja2 import Environment, FileSystemLoader
 from dotenv import load_dotenv
@@ -76,6 +76,33 @@ def load_summaries(selected_stocks):
     return {}
 
 
+def get_sentiment_history(stock_name, days=5):
+    """Get sentiment score history for a stock over the last N days"""
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days - 1)
+    
+    history = []
+    for i in range(days):
+        current_date = start_date + timedelta(days=i)
+        date_str = current_date.strftime("%Y-%m-%d")
+        
+        doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": date_str})
+        if doc and "summaries" in doc and stock_name in doc["summaries"]:
+            stock_data = doc["summaries"][stock_name]
+            sentiment_score = stock_data.get("sentiment_score", 0)
+            
+            # Format date label (e.g., "Jan 5")
+            date_label = current_date.strftime("%b %d")
+            
+            history.append({
+                "date": date_str,
+                "date_label": date_label,
+                "score": sentiment_score
+            })
+    
+    return history
+
+
 def refine_summaries(summaries, file_name=None):
     """Process summaries through Gemini to refine and remove repetition"""
     prompt = """
@@ -134,8 +161,8 @@ def generate_newsletter(summaries, hot_stocks=[]):
         lstrip_blocks=True
     )
     
-    # Load templates
-    template = env.get_template('newsletter_template.html')
+    # Load new v2 template
+    template = env.get_template('newsletter_template_v2.html')
 
     if len(summaries) == 0 and len(hot_stocks) == 0:
         return ""
@@ -144,19 +171,19 @@ def generate_newsletter(summaries, hot_stocks=[]):
     user_stocks_data = []
     for company_name, data in summaries.items():
         if data.get('tldr'):  # Only include stocks with content
+            # Get sentiment history for this stock
+            sentiment_history = get_sentiment_history(company_name, days=5)
+            
             stock_data = {
                 'company_name': company_name,
                 'sentiment': data['sentiment'].capitalize(),
                 'sentiment_class': data['sentiment'].lower(),
                 'tldr': data.get('tldr', ''),
-                'key_points': data.get('key_points', []),
-                'action_items': data.get('action_items', []),
-                'has_key_points': bool(data.get('key_points')),
-                'has_action_items': bool(data.get('action_items'))
+                'sentiment_history': sentiment_history
             }
             user_stocks_data.append(stock_data)
 
-    # Prepare hot stocks data
+    # Prepare hot stocks data (if needed in future)
     hot_stocks_data = []
     for stock in hot_stocks:
         try:
@@ -166,15 +193,14 @@ def generate_newsletter(summaries, hot_stocks=[]):
             else:
                 stock_data = stock
 
+            sentiment_history = get_sentiment_history(stock_data.get('stock_name', ''), days=5)
+
             formatted_stock = {
                 'company_name': stock_data.get('stock_name', 'Hot Stock'),
                 'sentiment': stock_data.get('sentiment', '').capitalize(),
                 'sentiment_class': stock_data.get('sentiment', '').lower(),
                 'tldr': stock_data.get('tldr', ''),
-                'key_points': stock_data.get('key_points', []),
-                'action_items': stock_data.get('action_items', []),
-                'has_key_points': bool(stock_data.get('key_points', [])),
-                'has_action_items': bool(stock_data.get('action_items', []))
+                'sentiment_history': sentiment_history
             }
             hot_stocks_data.append(formatted_stock)
         except (json.JSONDecodeError, KeyError, AttributeError) as e:

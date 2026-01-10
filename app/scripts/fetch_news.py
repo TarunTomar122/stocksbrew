@@ -18,6 +18,7 @@ from email.utils import parsedate_to_datetime
 from scripts.db import client
 from googlenewsdecoder import gnewsdecoder
 from dotenv import load_dotenv
+from botasaurus_requests import Request
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
 INPUT_FILE = os.path.join(DATA_DIR, 'stocks_input.json')
@@ -74,9 +75,9 @@ def custom_fetch_latest_headlines(search_text, num_headlines):
         # Get current time in UTC
         current_time = datetime.now(timezone.utc)
         
-        # Calculate start of yesterday in UTC
+        # Calculate start of today in UTC (only fetch today's news)
         today = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_of_yesterday = today - timedelta(days=2)
+        start_of_today = today
         
         # print(f"Fetching articles from {start_of_yesterday} to {current_time}")
         
@@ -112,9 +113,9 @@ def custom_fetch_latest_headlines(search_text, num_headlines):
                 if not title_text:
                     continue
                 
-                # Include articles from start of yesterday until now
+                # Include articles from start of today until now
                 if (title_text.strip() and url and 
-                    pub_date >= start_of_yesterday and 
+                    pub_date >= start_of_today and 
                     pub_date <= current_time):
                     filtered_headlines.append({
                         'title': title_text.strip(),
@@ -168,16 +169,10 @@ def save_processed_urls(urls, url_content):
         json.dump(url_content, f)
 
 
-def fetch_full_article_content(url):
-    """Fetch and extract the full content of an article from its URL"""
+def extract_article_text(html_content):
+    """Extract article text from HTML content"""
     try:
-        # Add delay to be respectful to servers
-        time.sleep(1)
-        
-        response = requests.get(url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(html_content, 'html.parser')
         
         # Remove unwanted elements
         unwanted = ['script', 'style', 'nav', 'header', 'footer', 'iframe']
@@ -215,7 +210,7 @@ def fetch_full_article_content(url):
                 )
         
         # Clear memory
-        del soup, response
+        del soup
         gc.collect()
         
         if not article_content:
@@ -224,6 +219,32 @@ def fetch_full_article_content(url):
         # Truncate very long content to save memory
         if len(article_content) > 20000:
             article_content = article_content[:20000]
+        return article_content
+        
+    except Exception as e:
+        return f"Error extracting content: {str(e)}"
+
+
+def fetch_full_article_content(url):
+    """Fetch and extract the full content of an article from its URL using Botasaurus"""
+    try:
+        # Add delay to be respectful to servers
+        time.sleep(1)
+        
+        # Use Botasaurus Request with anti-bot bypass (simple usage)
+        response = Request().get(url)
+        
+        # Check if request was successful
+        if response.status_code != 200:
+            return f"Failed to fetch content: HTTP {response.status_code}"
+        
+        # Extract article text from HTML
+        article_content = extract_article_text(response.text)
+        
+        # Clear memory
+        del response
+        gc.collect()
+        
         return article_content
         
     except Exception as e:
@@ -248,7 +269,7 @@ def load_stocks_config():
 def fetch_news_for_stock(
     stock_info, config, newsapi, processed_urls, url_content
 ):
-    """Fetch news articles for a single stock"""
+    """Fetch news articles for a single stock from multiple sources"""
     print(f"📰 Fetching news for {stock_info['company_name']}...")
     
     # Calculate date range
@@ -258,34 +279,37 @@ def fetch_news_for_stock(
     ).strftime('%Y-%m-%d')
     to_date = today.strftime('%Y-%m-%d')
     
-    # print(f"  📅 Fetching news from {from_date} to {to_date}")
-    
     all_articles = []
     new_processed_urls = set()
     url_updates = {}
-    articles_count = 0  # Keep track of count separately
+    articles_count = 0
     
-    # Search for each term
-    for search_term in stock_info['search_terms']:
+    # Search for each term (but limit variety)
+    for search_term in stock_info['search_terms'][:1]:  # Just use first search term
         try:
-            # print(f"  🔍 Searching for: {search_term}")
+            # Source 1: Google News RSS (get 1 article)
+            print(f"  🔍 Google RSS: {search_term}")
+            headlines = custom_fetch_latest_headlines(search_term, 2)
+            rss_articles = headlines[:1]  # Take only 1
+            print(f"    Found {len(rss_articles)} from RSS")
+            
+            # Source 2: NewsAPI (get 1 article)
+            print(f"  🔍 NewsAPI: {search_term}")
             response = newsapi.get_everything(
                 q=search_term,
                 language=config['language'],
                 sort_by='relevancy',
                 from_param=from_date,
                 to=to_date,
-                page_size=config['max_articles_per_stock']
+                page_size=2
             )
             
-            articles = response.get('articles', [])
-
-            # print(f"    Found {len(articles)} articles")
-
-            headlines = custom_fetch_latest_headlines(search_term, 5)
-            articles.extend(headlines)
-
-            print("Found", len(articles), "articles")
+            newsapi_articles = response.get('articles', [])[:1]  # Take only 1
+            print(f"    Found {len(newsapi_articles)} from NewsAPI")
+            
+            # Combine articles from both sources
+            articles = rss_articles + newsapi_articles
+            print(f"  ✅ Total: {len(articles)} articles (1 RSS + 1 NewsAPI)")
 
             # Add metadata and fetch full content for each article
             for article in articles:

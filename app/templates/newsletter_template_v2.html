@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StocksBrew Daily ☕</title>
+    <style>
+        /* Reset */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; }
+            .content { padding: 20px !important; }
+            .header { padding: 30px 20px !important; }
+            .stock-card { padding: 20px !important; }
+            .sentiment-badge { font-size: 11px !important; padding: 6px 12px !important; }
+            h1 { font-size: 24px !important; }
+            h2 { font-size: 18px !important; }
+            .tldr { font-size: 14px !important; padding: 15px !important; }
+            .sentiment-graph { height: 60px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa;">
+    <!-- Main Container -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8f9fa;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="container" style="max-width: 600px; background-color: #ffffff;">
+                    <!-- Header -->
+                    <tr>
+                        <td class="header" style="background-color: #000000; color: white; padding: 40px 30px; text-align: center;">
+                            <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.5px;">StocksBrew Daily ☕</h1>
+                            <div style="font-size: 16px; opacity: 0.8; margin: 0;">{{ date }}</div>
+                        </td>
+                    </tr>
+                    
+                    {% if user_stocks %}
+                    {% for stock in user_stocks %}
+                    <!-- Stock Card -->
+                    <tr>
+                        <td class="stock-card" style="padding: 30px; border-bottom: 1px solid #e5e7eb;">
+                            <!-- Stock Header -->
+                            <h2 style="font-size: 22px; font-weight: 700; color: #000000; margin: 0 0 10px 0;">{{ stock.company_name }}</h2>
+                            
+                            <!-- Sentiment Badge -->
+                            <div style="margin-bottom: 15px;">
+                                {% if stock.sentiment_class == 'positive' %}
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #10b981; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                {% elif stock.sentiment_class == 'negative' %}
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ef4444; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                {% else %}
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #6b7280; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- TL;DR -->
+                            <div class="tldr" style="background: #f8f9fa; padding: 18px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; line-height: 1.6; border-left: 4px solid #000000;">
+                                {{ stock.tldr }}
+                            </div>
+                            
+                            <!-- 5-Day Sentiment Trend -->
+                            {% if stock.sentiment_history and stock.sentiment_history|length > 0 %}
+                            <div style="margin-top: 20px;">
+                                <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">5-Day Sentiment Trend</div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                                    <tr>
+                                        <!-- HTML/CSS Bar Chart -->
+                                        <td>
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                {% for point in stock.sentiment_history|reverse %}
+                                                <tr>
+                                                    <td style="width: 60px; font-size: 11px; color: #6b7280; padding: 4px 8px 4px 0; vertical-align: middle;">{{ point.date_label }}</td>
+                                                    <td style="position: relative; padding: 4px 0; vertical-align: middle;">
+                                                        <!-- Sentiment bar -->
+                                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #e5e7eb; height: 20px; border-radius: 3px;">
+                                                            <tr>
+                                                                {% if point.score >= 0 %}
+                                                                <!-- Positive bar -->
+                                                                <td style="width: 50%; text-align: right; padding: 0;"></td>
+                                                                <td style="width: {{ (point.score * 50)|int }}%; background: {% if point.score >= 0.5 %}#10b981{% elif point.score > 0 %}#34d399{% else %}transparent{% endif %}; border-radius: 0 3px 3px 0; padding: 0;"></td>
+                                                                <td style="width: {{ (50 - (point.score * 50))|int }}%; padding: 0;"></td>
+                                                                {% else %}
+                                                                <!-- Negative bar -->
+                                                                <td style="width: {{ (50 + (point.score * 50))|int }}%; padding: 0;"></td>
+                                                                <td style="width: {{ (point.score * -50)|int }}%; background: {% if point.score <= -0.5 %}#ef4444{% elif point.score < 0 %}#f87171{% else %}transparent{% endif %}; border-radius: 3px 0 0 3px; padding: 0;"></td>
+                                                                <td style="width: 50%; padding: 0;"></td>
+                                                                {% endif %}
+                                                            </tr>
+                                                        </table>
+                                                        <!-- Zero line marker -->
+                                                        <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #9ca3af; opacity: 0.5;"></div>
+                                                    </td>
+                                                    <td style="width: 45px; font-size: 11px; font-weight: 600; padding: 4px 0 4px 8px; text-align: right; vertical-align: middle; color: {% if point.score > 0 %}#10b981{% elif point.score < 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                                                        {% if point.score > 0 %}+{% endif %}{{ "%.2f"|format(point.score) }}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #000000; padding: 30px; text-align: center; color: #ffffff;">
+                            <p style="font-size: 14px; margin: 0 0 10px 0;">Generated by StocksBrew AI</p>
+                            <p style="font-size: 14px; margin: 0 0 15px 0; opacity: 0.8;">All information is for reference only • Not financial advice</p>
+                            <a href="https://stocksbrew.vercel.app/unsubscribe" style="color: #ffffff; text-decoration: none; font-size: 13px; opacity: 0.8;">Unsubscribe</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
