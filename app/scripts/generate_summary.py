@@ -200,17 +200,35 @@ def generate_summary(content, gemini_model, company_name: str = None):
     
     prompt = f"""
     You're given raw news content about a company from TODAY (the current day only). 
-    Summarize only the parts that could affect the company's stock price.
+    Your job is to analyze if this news could affect the company's STOCK PRICE and summarize accordingly.
     {context_section}
 
     🎯 Your goal:
-    Make it **ultra clear** for beginners who want quick, bite-sized insights.
+    Make it **ultra clear** for stock investors who want quick, bite-sized insights about FINANCIAL news only.
 
-    ### What to do:
-    - Extract **only price-impacting information from TODAY's news**
-    - Make it **concise**, **easy to scan**, and **actionable**
-    - Use **emojis**, **numbers**, and **bold keywords** to improve readability
-    - Avoid technical jargon
+    ### ⚠️ CRITICAL - What NEWS to INCLUDE (Stock/Financial Impact):
+    **ONLY include news that directly affects stock price, such as:**
+    - 📊 **Earnings/Financial Results**: Revenue, profit, margins, guidance
+    - 💰 **Major Deals/Contracts**: Acquisitions, mergers, partnerships worth mentioning
+    - 🏛️ **Regulatory/Legal**: Government approvals, lawsuits, compliance issues
+    - 📈 **Analyst Actions**: Upgrades, downgrades, price target changes
+    - 💼 **Leadership Changes**: CEO, CFO appointments/departures
+    - 🌍 **Market Position**: Market share gains/losses, competitive threats
+    - ⚠️ **Crises/Scandals**: Data breaches, product recalls, fraud allegations
+    - 🏭 **Operations**: Factory shutdowns, production issues, supply chain disruptions
+    - 💵 **Dividends/Buybacks**: Payout announcements, capital allocation
+
+    ### 🚫 CRITICAL - What NEWS to EXCLUDE (Not Stock-Relevant):
+    **Automatically IGNORE and return "no material news" if articles only contain:**
+    - 🛠️ **Product Features**: New app features, UI updates, minor product launches
+    - 👥 **HR/Culture**: Employee benefits, office openings, team expansions
+    - 🌱 **CSR/Sustainability**: Tree planting, charity, social initiatives (unless mandated by law)
+    - 🏆 **Awards/Rankings**: "Best company to work for", industry awards
+    - 📱 **Tech Updates**: Software updates, bug fixes, minor improvements
+    - 🎤 **Conferences/Events**: Speaking at events, booth presence, sponsorships
+    - 📰 **Opinion Pieces**: Editorials, think pieces, "what this means for..." articles
+
+    ### Sentiment Scoring:
     - Assign a sentiment score between -1 (very negative) to +1 (very positive)
       * Use the full range: don't default to 0 easily
       * -1.0 to -0.6: Very negative (major losses, scandals, regulatory issues)
@@ -219,22 +237,24 @@ def generate_summary(content, gemini_model, company_name: str = None):
       * +0.2 to +0.5: Moderately positive (good results, minor wins)
       * +0.6 to +1.0: Very positive (major contracts, breakthrough results)
 
-    ### ⚠️ CRITICAL - Filter Out Old/Repetitive News:
+    ### Writing Style:
+    - Make it **concise**, **easy to scan**, and **actionable**
+    - Use **emojis**, **numbers**, and **bold keywords** to improve readability
+    - Avoid technical jargon - write for beginners
+    - Keep **tldr under 2 sentences**
+    - Each key point must explain WHY it matters for stock price
+
+    ### ⚠️ Additional Filters:
     - **IGNORE** any news from previous days, weeks, or months
-    - **SKIP** repetitive content that's already been covered in historical context
+    - **SKIP** repetitive content already covered in historical context
     - If multiple articles say the same thing, mention it ONCE only
-    - If all news is outdated/repetitive, return the "no material news" response
     - Focus ONLY on NEW developments from TODAY
 
-    ### What to avoid:
-    - NEVER suggest **buying**, **selling**, or **trading** a stock.  
-    - DO NOT include:  
-        - Buy/sell/accumulate/hold/exit  
-        - Target prices (e.g., "Target ₹400")  
-        - Stop losses (e.g., "SL at ₹360")  
-        - Technical trading setups (e.g., breakout, support, RSI)
-        - Old news that was already covered in previous days
-        - Repetitive information from multiple articles
+    ### What to NEVER include:
+    - NEVER suggest **buying**, **selling**, or **trading** a stock
+    - NO target prices, stop losses, or technical trading setups
+    - NO old news that was already covered
+    - NO repetitive information
 
     ---
 
@@ -246,13 +266,9 @@ def generate_summary(content, gemini_model, company_name: str = None):
     ### Output format (as JSON):
     {example_json}
 
-    ### NOTES:
-    - Keep **tldr under 2 sentences**
-    - Each key point must be detailed summary of the news in a easy to read format
-    - Do NOT include unrelated business, HR, or CSR news
-    - Never include more than 2 points in any category.
-    - **sentiment_score** must be a number between -1 and 1 (use decimals, avoid 0 unless truly neutral)
-    - If news has **no major stock impact**, return:  
+    ### Decision Rule:
+    - If news affects stock price (see INCLUDE list) → Summarize it
+    - If news does NOT affect stock price (see EXCLUDE list) → Return:
     {empty_json}
     """
     

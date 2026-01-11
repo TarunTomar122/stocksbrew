@@ -189,6 +189,39 @@ def get_sentiment_history(company_name, days=5):
     return history
 
 
+def get_price_change(company_name):
+    """Get yesterday's price change percentage"""
+    try:
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        day_before = today - timedelta(days=2)
+        
+        yesterday_str = yesterday.strftime("%Y-%m-%d")
+        day_before_str = day_before.strftime("%Y-%m-%d")
+        
+        # Get yesterday's price
+        yesterday_doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": yesterday_str})
+        yesterday_price = None
+        if yesterday_doc and "summaries" in yesterday_doc and company_name in yesterday_doc["summaries"]:
+            yesterday_price = yesterday_doc["summaries"][company_name].get("stock_price")
+        
+        # Get day before's price
+        day_before_doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": day_before_str})
+        day_before_price = None
+        if day_before_doc and "summaries" in day_before_doc and company_name in day_before_doc["summaries"]:
+            day_before_price = day_before_doc["summaries"][company_name].get("stock_price")
+        
+        # Calculate change
+        if yesterday_price and day_before_price and day_before_price > 0:
+            change_pct = ((yesterday_price - day_before_price) / day_before_price) * 100
+            return {"change_pct": change_pct, "has_change": True}
+        
+        return {"change_pct": 0, "has_change": False}
+    except Exception as e:
+        print(f"⚠️ Price change error: {e}")
+        return {"change_pct": 0, "has_change": False}
+
+
 def generate_newsletter(stock_summaries):
     """Generate newsletter HTML"""
     print(f"\n📝 Generating newsletter...")
@@ -205,12 +238,17 @@ def generate_newsletter(stock_summaries):
     user_stocks_data = []
     for stock in stock_summaries:
         if stock['summary']:
+            # Get price change
+            price_change = get_price_change(stock['company_name'])
+            
             user_stocks_data.append({
                 'company_name': stock['company_name'],
                 'sentiment': stock['summary']['sentiment'],
                 'sentiment_class': stock['summary']['sentiment'].lower(),
                 'tldr': stock['summary']['tldr'],
-                'sentiment_history': stock['sentiment_history']
+                'sentiment_history': stock['sentiment_history'],
+                'price_change': price_change['change_pct'],
+                'has_price_change': price_change['has_change']
             })
     
     if not user_stocks_data:

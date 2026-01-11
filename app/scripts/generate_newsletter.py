@@ -103,6 +103,43 @@ def get_sentiment_history(stock_name, days=5):
     return history
 
 
+def get_price_change(stock_name):
+    """Get yesterday's price change percentage for a stock"""
+    try:
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        day_before_yesterday = today - timedelta(days=2)
+        
+        yesterday_str = yesterday.strftime("%Y-%m-%d")
+        day_before_str = day_before_yesterday.strftime("%Y-%m-%d")
+        
+        # Try to get yesterday's price
+        yesterday_doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": yesterday_str})
+        yesterday_price = None
+        if yesterday_doc and "summaries" in yesterday_doc and stock_name in yesterday_doc["summaries"]:
+            yesterday_price = yesterday_doc["summaries"][stock_name].get("stock_price")
+        
+        # Try to get day before yesterday's price
+        day_before_doc = client.stockbrew_stuff.regular_stocks_summaries.find_one({"date": day_before_str})
+        day_before_price = None
+        if day_before_doc and "summaries" in day_before_doc and stock_name in day_before_doc["summaries"]:
+            day_before_price = day_before_doc["summaries"][stock_name].get("stock_price")
+        
+        # Calculate percentage change
+        if yesterday_price and day_before_price and day_before_price > 0:
+            change_pct = ((yesterday_price - day_before_price) / day_before_price) * 100
+            return {
+                "change_pct": change_pct,
+                "has_change": True
+            }
+        
+        return {"change_pct": 0, "has_change": False}
+    
+    except Exception as e:
+        print(f"⚠️ Could not fetch price change for {stock_name}: {e}")
+        return {"change_pct": 0, "has_change": False}
+
+
 def refine_summaries(summaries, file_name=None):
     """Process summaries through Gemini to refine and remove repetition"""
     prompt = """
@@ -174,12 +211,17 @@ def generate_newsletter(summaries, hot_stocks=[]):
             # Get sentiment history for this stock
             sentiment_history = get_sentiment_history(company_name, days=5)
             
+            # Get price change from yesterday
+            price_change = get_price_change(company_name)
+            
             stock_data = {
                 'company_name': company_name,
                 'sentiment': data['sentiment'].capitalize(),
                 'sentiment_class': data['sentiment'].lower(),
                 'tldr': data.get('tldr', ''),
-                'sentiment_history': sentiment_history
+                'sentiment_history': sentiment_history,
+                'price_change': price_change['change_pct'],
+                'has_price_change': price_change['has_change']
             }
             user_stocks_data.append(stock_data)
 

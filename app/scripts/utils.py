@@ -84,9 +84,9 @@ def prepare_stocks_input(stocks):
         "stocks": [
             {
                 "symbol": stock,
-                "company_name": stock,  # TODO: Add company names
+                "company_name": stock,
                 "search_terms": [
-                    f"{stock.lower()} company stocks news"
+                    stock  # Just use the company name - AI will filter for financial relevance
                 ]
             }
             for stock in stocks

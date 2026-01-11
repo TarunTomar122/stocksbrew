@@ -46,14 +46,22 @@
                             <!-- Stock Header -->
                             <h2 style="font-size: 22px; font-weight: 700; color: #000000; margin: 0 0 10px 0;">{{ stock.company_name }}</h2>
                             
-                            <!-- Sentiment Badge -->
+                            <!-- Sentiment Badge & Price Change -->
                             <div style="margin-bottom: 15px;">
                                 {% if stock.sentiment_class == 'positive' %}
-                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #10b981; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #10b981; color: #ffffff; display: inline-block; margin-right: 8px;">{{ stock.sentiment }}</span>
                                 {% elif stock.sentiment_class == 'negative' %}
-                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ef4444; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #ef4444; color: #ffffff; display: inline-block; margin-right: 8px;">{{ stock.sentiment }}</span>
                                 {% else %}
-                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #6b7280; color: #ffffff; display: inline-block;">{{ stock.sentiment }}</span>
+                                <span class="sentiment-badge" style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background-color: #6b7280; color: #ffffff; display: inline-block; margin-right: 8px;">{{ stock.sentiment }}</span>
+                                {% endif %}
+                                
+                                {% if stock.has_price_change %}
+                                    {% if stock.price_change >= 0 %}
+                                    <span style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; background-color: #d1fae5; color: #047857; display: inline-block;">📈 +{{ "%.2f"|format(stock.price_change) }}%</span>
+                                    {% else %}
+                                    <span style="padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; background-color: #fee2e2; color: #dc2626; display: inline-block;">📉 {{ "%.2f"|format(stock.price_change) }}%</span>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                             
